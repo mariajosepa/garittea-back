@@ -1,11 +1,13 @@
 const express = require('express')
-const app = express()
-const port = 3000
+const personRoutes = require('./routes/personRoutes.js')
+const PORT = process.env.PORT || 3000;
 
-app.get('/',(req,res) => {
-  res.send('Hello world!')
-})
+const app = express();
 
-app.listen(port, () => {
-  console.log(`Example app is running on port ${port}`)
+//define the routes
+app.use('/person', personRoutes);
+
+//launch the server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
 })

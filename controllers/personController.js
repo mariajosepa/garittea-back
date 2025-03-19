@@ -1,14 +1,16 @@
-import prisma from  '../prisma/client.js'
+const prisma =  require('../prisma/client.js')
 
-//Get all users
-export const getUsers = async (req, res) => {
+//Get people
+const getPeople = async (req, res) => {
 
   try{
-    const users = await prisma.post.findMany();
-    res.json(users);
+    const people = await prisma.person.findMany();
+    res.json(people);
   }
   catch{
     res.status(500).json({error: "Something went wrong!"});
 
   }
 }
+
+module.exports = { getPeople }
