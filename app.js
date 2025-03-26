@@ -6,6 +6,10 @@ const app = express();
 
 //define the routes
 app.use('/person', personRoutes);
+app.get('/', (req, res) => {
+  res.send('Welcome to the root route!');
+});
+
 
 //launch the server
 app.listen(PORT, () => {
