@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model bills {
   idbills Int      @id @default(autoincrement())
   date    DateTime @db.Date
@@ -17,7 +18,7 @@ model bills {
 model credit {
   idcredit                              Int     @id @default(autoincrement())
   user                                  Int
-  applicantperson                       Int
+  applicantperson                       Int     
   managingperson                        Int?
   debtamount                            Int
   state                                 Int
@@ -44,6 +45,7 @@ model faculty {
   inchargeperson                 Int?
   credit_credit_facultyTofaculty credit[] @relation("credit_facultyTofaculty")
   person                         person?  @relation(fields: [inchargeperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "inchargeperson")
+  facultyEmail              facultyEmail?  @relation("faculty_facultyEmail")
 
   @@index([inchargeperson], map: "inchargeperson_idx")
 }
@@ -52,11 +54,25 @@ model person {
   idperson                              Int       @id @default(autoincrement())
   name                                  String    @db.VarChar(45)
   cellphone                             Int
-  email                                 String    @db.VarChar(45)
+  email                                 email?     @relation("email_person")
   canmanage                             Bytes     @default("MA==")
   credit_credit_applicantpersonToperson credit[]  @relation("credit_applicantpersonToperson")
   credit_credit_managingpersonToperson  credit[]  @relation("credit_managingpersonToperson")
   faculty                               faculty[]
+}
+
+model email{
+  idEmail Int  @id @default(autoincrement())
+  email String @db.VarChar(300)
+  personId Int @unique
+  person person @relation("email_person", fields: [personId], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "person")   
+}
+
+model facultyEmail {
+  idEmail Int  @id @default(autoincrement())
+  email String @db.VarChar(300)
+  facultyId Int @unique
+  faculty faculty @relation("faculty_facultyEmail", fields: [facultyId], references: [idfaculty], onDelete: NoAction, onUpdate: NoAction, map: "faculty")
 }
 
 model users {
