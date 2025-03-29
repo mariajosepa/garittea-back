@@ -1,4 +1,4 @@
-const prisma =  require('../prisma/client.js')
+import prisma from '../prisma/client.js'
 
 //Get people
 const getPeople = async (req, res) => {
@@ -13,4 +13,4 @@ const getPeople = async (req, res) => {
   }
 }
 
-module.exports = { getPeople }
+export default getPeople

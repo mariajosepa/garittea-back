@@ -1,11 +1,13 @@
-const express = require('express')
-const personRoutes = require('./routes/personRoutes.js')
+import express from 'express'
+import personRoutes from './routes/personRoutes.js'
+import creditRoutes from './routes/creditRoutes.js';
 const PORT = process.env.PORT || 3000;
 
 const app = express();
 
 //define the routes
 app.use('/person', personRoutes);
+app.use('/credits', creditRoutes),
 app.get('/', (req, res) => {
   res.send('Welcome to the root route!');
 });

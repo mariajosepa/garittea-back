@@ -7,14 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-model bills {
-  idbills Int      @id @default(autoincrement())
-  date    DateTime @db.Date
-  route   String   @db.VarChar(300)
-  credit  credit[]
-}
-
 model credit {
   idcredit                              Int     @id @default(autoincrement())
   user                                  Int
@@ -23,15 +15,12 @@ model credit {
   debtamount                            Int
   state                                 Int
   faculty                               Int
-  bill                                  Int?
   person_credit_applicantpersonToperson person  @relation("credit_applicantpersonToperson", fields: [applicantperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "applicantperson")
-  bills                                 bills?  @relation(fields: [bill], references: [idbills], onDelete: NoAction, onUpdate: NoAction, map: "bill")
   faculty_credit_facultyTofaculty       faculty @relation("credit_facultyTofaculty", fields: [faculty], references: [idfaculty], onDelete: NoAction, onUpdate: NoAction, map: "faculty")
   person_credit_managingpersonToperson  person? @relation("credit_managingpersonToperson", fields: [managingperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "managingperson")
   users                                 users   @relation(fields: [user], references: [idusers], onDelete: NoAction, onUpdate: NoAction, map: "user")
 
   @@index([applicantperson], map: "applicantperson_idx")
-  @@index([bill], map: "bill_idx")
   @@index([faculty], map: "faculty_idx")
   @@index([managingperson], map: "managingperson_idx")
   @@index([user], map: "user_idx")
