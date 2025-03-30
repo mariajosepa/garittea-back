@@ -1,10 +1,10 @@
-import prisma from '../prisma/client.js'
+import { getAllPeople } from '../services/personService.js';
 
 //Get people
-const getPeople = async (req, res) => {
+const GetPeople = async (req, res) => {
 
   try{
-    const people = await prisma.person.findMany();
+    const people = await getAllPeople();
     res.json(people);
   }
   catch{
@@ -13,4 +13,4 @@ const getPeople = async (req, res) => {
   }
 }
 
-export default getPeople
+export default GetPeople

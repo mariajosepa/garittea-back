@@ -1,8 +1,8 @@
 import express from 'express'
-import  getPeople  from '../controllers/personController.js'
+import  GetPeople  from '../controllers/personController.js'
 
 const router = express.Router();
 
-router.get('/', getPeople);
+router.get('/', GetPeople);
 
 export default router;
