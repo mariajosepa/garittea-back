@@ -3,7 +3,7 @@ import prisma from '../prisma/client.js'
 //Get all credits
 export const getAllCredits = async (req,res) => {
   try{
-    credits = await prisma.credit.findMany();
+    const credits = await prisma.credit.findMany();
     res.status(200).json(credits);
   }
   catch(error){
