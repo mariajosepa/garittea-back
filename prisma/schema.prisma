@@ -42,6 +42,7 @@ model faculty {
 model person {
   idperson                              Int       @id @default(autoincrement())
   name                                  String    @db.VarChar(45)
+  lastname                              String    @db.VarChar(45)
   cellphone                             String
   email                                 email?    @relation("email_person")
   credit_credit_applicantpersonToperson credit[]  @relation("credit_applicantpersonToperson")

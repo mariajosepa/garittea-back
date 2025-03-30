@@ -50,8 +50,10 @@ async function main() {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const person = await prisma.person.create({
+      
       data: {
-        name: `${firstName} ${lastName}`,
+        name: firstName,
+        lastname: lastName,
         // Generate string-based phone number
         cellphone: faker.phone.number(), // Updated to use faker.phone.number()
         // Create the related email record right after creating the person
