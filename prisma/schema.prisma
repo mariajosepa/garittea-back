@@ -29,7 +29,7 @@ model credit {
 model faculty {
   idfaculty                      Int      @id @default(autoincrement())
   name                           String   @db.VarChar(45)
-  phone                          Int
+  phone                          String
   associatedemails               String   @db.VarChar(45)
   inchargeperson                 Int?
   credit_credit_facultyTofaculty credit[] @relation("credit_facultyTofaculty")
@@ -42,9 +42,8 @@ model faculty {
 model person {
   idperson                              Int       @id @default(autoincrement())
   name                                  String    @db.VarChar(45)
-  cellphone                             Int
-  email                                 email?     @relation("email_person")
-  canmanage                             Bytes     @default("MA==")
+  cellphone                             String
+  email                                 email?    @relation("email_person")
   credit_credit_applicantpersonToperson credit[]  @relation("credit_applicantpersonToperson")
   credit_credit_managingpersonToperson  credit[]  @relation("credit_managingpersonToperson")
   faculty                               faculty[]
