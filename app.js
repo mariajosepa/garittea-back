@@ -1,9 +1,14 @@
 import express from 'express'
 import personRoutes from './routes/personRoutes.js'
 import creditRoutes from './routes/creditRoutes.js';
+import cors from 'cors';
 const PORT = process.env.PORT || 3000;
 
 const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:3039/',
+}));
 
 //define the routes
 app.use('/person', personRoutes);

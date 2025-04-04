@@ -2,7 +2,6 @@ import prisma from '../prisma/client.js';
 
 
 export const getAllCredits = async () => {
-
   return await prisma.credit.findMany({
     select: {
       idcredit: true,
@@ -17,22 +16,16 @@ export const getAllCredits = async () => {
         select: {
           name: true,
           lastname: true,
-        }
+        },
       },
-      person_credit_managingpersonToperson: {
-        select: {
-          name: true,
-          lastname: true,
-        }
-      },
+      person_credit_managingpersonToperson: true,
       faculty_credit_facultyTofaculty: {
         select: {
           name: true,
         },
       },
-    }
+    },
   });
-
 }
 
 export const getCreditById = async (id) => {

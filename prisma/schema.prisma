@@ -11,13 +11,13 @@ model credit {
   idcredit                              Int     @id @default(autoincrement())
   user                                  Int
   applicantperson                       Int     
-  managingperson                        Int?
+  managingperson                        Int
   debtamount                            Int
   state                                 Int
   faculty                               Int
   person_credit_applicantpersonToperson person  @relation("credit_applicantpersonToperson", fields: [applicantperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "applicantperson")
   faculty_credit_facultyTofaculty       faculty @relation("credit_facultyTofaculty", fields: [faculty], references: [idfaculty], onDelete: NoAction, onUpdate: NoAction, map: "faculty")
-  person_credit_managingpersonToperson  person? @relation("credit_managingpersonToperson", fields: [managingperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "managingperson")
+  person_credit_managingpersonToperson  person @relation("credit_managingpersonToperson", fields: [managingperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "managingperson")
   users                                 users   @relation(fields: [user], references: [idusers], onDelete: NoAction, onUpdate: NoAction, map: "user")
 
   @@index([applicantperson], map: "applicantperson_idx")
