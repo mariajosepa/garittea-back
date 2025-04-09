@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
 model credit {
   idcredit                              Int     @id @default(autoincrement())
   user                                  Int
@@ -15,6 +19,7 @@ model credit {
   debtamount                            Int
   state                                 Int
   faculty                               Int
+  bill                                  bill?   @relation("CreditToBill")
   person_credit_applicantpersonToperson person  @relation("credit_applicantpersonToperson", fields: [applicantperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "applicantperson")
   faculty_credit_facultyTofaculty       faculty @relation("credit_facultyTofaculty", fields: [faculty], references: [idfaculty], onDelete: NoAction, onUpdate: NoAction, map: "faculty")
   person_credit_managingpersonToperson  person @relation("credit_managingpersonToperson", fields: [managingperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "managingperson")
@@ -70,4 +75,10 @@ model users {
   lastname  String   @db.VarChar(45)
   password  String   @db.VarChar(45)
   credit    credit[]
+}
+
+model bill {
+  idbill    Int    @id @default(autoincrement())
+  creditId  Int    @unique
+  credit    credit @relation("CreditToBill", fields: [creditId], references: [idcredit])
 }
