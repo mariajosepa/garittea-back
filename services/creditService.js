@@ -66,7 +66,6 @@ export const postCredit = async (creditData) => {
     throw new Error('User does not exist');
   }
 
-  // Validar existencia de la persona (applicant)
   const applicantExists = await prisma.person.findUnique({
     where: { idperson: applicantId },
   });
@@ -74,7 +73,6 @@ export const postCredit = async (creditData) => {
     throw new Error('Applicant does not exist');
   }
 
-  // Validar existencia de la persona (managing)
   const managingExists = await prisma.person.findUnique({
     where: { idperson: managingPersonId },
   });
@@ -82,14 +80,12 @@ export const postCredit = async (creditData) => {
     throw new Error('Managing person does not exist');
   }
 
-  // Validar existencia de la facultad
   const facultyExists = await prisma.faculty.findUnique({
     where: { idfaculty: facultyId },
   });
   if (!facultyExists) {
     throw new Error('Faculty does not exist');
   }
-
 
   return await prisma.credit.create({
     data: {
@@ -115,6 +111,11 @@ export const postCredit = async (creditData) => {
       },
       debtamount: debtAmount,
     },
+    include: {
+      users: true,
+      person_credit_applicantpersonToperson: true,
+      person_credit_managingpersonToperson: true,
+      faculty_credit_facultyTofaculty: true,
+    },
   });
 }
-
