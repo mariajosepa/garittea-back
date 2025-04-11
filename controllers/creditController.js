@@ -1,4 +1,4 @@
-import { getAllCredits, getCreditsByDates, getCreditById, getCreditsByIdManagingPerson, postCredit } from '../services/creditService.js';
+import { getAllCredits, getCreditsByDates, getCreditById, getCreditsByIdManagingPerson, postCredit, deleteCreditById } from '../services/creditService.js';
 import { formatCredit } from '../formatters/creditFormatter.js';
 
 //Get all credits
