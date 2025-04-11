@@ -50,3 +50,26 @@ export const getCreditById = async (id) => {
   });
 }
 
+export const deleteCreditById = async (id) => {
+  const numericId = Number(id);
+
+  const credit = await prisma.credit.findUnique({
+    where: { idcredit: numericId },
+  });
+
+  if (!credit) {
+    throw new Error('Crédito no encontrado');
+  }
+
+  await prisma.bill.deleteMany({
+    where: { creditId: numericId },
+  });
+
+  await prisma.credit.delete({
+    where: { idcredit: numericId },
+  });
+
+  return { deletedId: numericId };
+};
+
+

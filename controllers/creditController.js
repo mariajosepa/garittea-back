@@ -1,4 +1,4 @@
-import { getAllCredits, getCreditById } from '../services/creditService.js';
+import { getAllCredits, getCreditById, deleteCreditById} from '../services/creditService.js';
 import { formatCredit } from '../formatters/creditFormatter.js';
 
 //Get all credits
@@ -39,3 +39,18 @@ export const GetCreditById = async (req,res) => {
     res.status(500).json({error: error.message});
   }
 }
+
+export const DeleteCredit = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await deleteCreditById(Number(id));
+    res.status(200).json({
+      message: 'Crédito eliminado correctamente',
+      deletedId: Number(id),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
