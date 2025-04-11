@@ -70,7 +70,7 @@ export const deleteCreditById = async (id) => {
   });
 
   return { deletedId: numericId };
-};
+}
 
 
 export const getCreditsByIdManagingPerson = async (id) => {
