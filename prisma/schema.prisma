@@ -83,4 +83,16 @@ model bill {
   billdate  DateTime @default(now()) 
   creditId  Int    @unique
   credit    credit @relation("CreditToBill", fields: [creditId], references: [idcredit])
+
+  creditNoteInitial creditNote[] @relation("CreditNoteInitialBill")
+  creditNoteFinish  creditNote[] @relation("CreditNoteFinishBill")
+}
+
+model creditNote {
+  idcreditNote  Int   @id // Este valor lo define el usuario, sin autoincremento
+  idInicialBill Int
+  idFinishBill  Int?
+
+  initialBill bill  @relation("CreditNoteInitialBill", fields: [idInicialBill], references: [idbill])
+  finishBill  bill? @relation("CreditNoteFinishBill", fields: [idFinishBill], references: [idbill])
 }
