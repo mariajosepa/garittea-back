@@ -50,6 +50,26 @@ export const getCreditById = async (id) => {
   });
 }
 
+export const getCreditsByIdManagingPerson = async (id) => {
+  if (!id) {
+    throw new Error('Managing person ID is required');
+  }
+
+  return await prisma.credit.findMany({
+    where: {
+      managingperson: {
+        idperson: Number(id),
+      },
+    },
+    include: {
+      users: true,
+      person_credit_applicantpersonToperson: true,
+      person_credit_managingpersonToperson: true,
+      faculty_credit_facultyTofaculty: true,
+    },
+  });
+}
+
 export const postCredit = async (creditData) => {
   const { userId, applicantId, managingPersonId, facultyId, debtAmount } = creditData;
   if (!userId || !applicantId || !managingPersonId || !facultyId || !debtAmount) {

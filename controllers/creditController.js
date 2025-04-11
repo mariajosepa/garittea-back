@@ -1,4 +1,4 @@
-import { getAllCredits, getCreditsByDates, getCreditById, postCredit } from '../services/creditService.js';
+import { getAllCredits, getCreditsByDates, getCreditById, GetCreditsByIdManagingPerson, postCredit } from '../services/creditService.js';
 import { formatCredit } from '../formatters/creditFormatter.js';
 
 //Get all credits
@@ -34,6 +34,18 @@ export const GetCreditById = async (req,res) => {
       return res.status(404).json({error: 'Credit not found'});
     }
     res.status(200).json(formatCredit(credit));
+  }
+  catch(error){
+    res.status(500).json({error: error.message});
+  }
+}
+
+export const GetCreditsByIdManagingPerson = async (req,res) => {
+  const { id } = req.query;
+  try{
+    const credits = await getCreditsByIdManagingPerson(id);
+    const formattedCredits = credits.map(formatCredit);
+    res.status(200).json(formattedCredits);
   }
   catch(error){
     res.status(500).json({error: error.message});
