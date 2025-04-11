@@ -14,6 +14,18 @@ export const GetAllCredits = async (req,res) => {
 
 }
 
+export const GetCreditsByDates = async (req,res) => {
+  const { startDate, endDate } = req.query;
+  try{
+    const credits = await getCreditsByDates(startDate, endDate);
+    const formattedCredits = credits.map(formatCredit);
+    res.status(200).json(formattedCredits);
+  }
+  catch(error){
+    res.status(500).json({error: error.message});
+  }
+}
+
 export const GetCreditById = async (req,res) => {
   const { id } = req.params;
   try{

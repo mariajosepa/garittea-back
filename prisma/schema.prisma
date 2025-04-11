@@ -13,6 +13,7 @@ generator erd {
 
 model credit {
   idcredit                              Int     @id @default(autoincrement())
+  creationdate                         DateTime @default(now())
   user                                  Int
   applicantperson                       Int     
   managingperson                        Int
@@ -79,6 +80,7 @@ model users {
 
 model bill {
   idbill    Int    @id @default(autoincrement())
+  billdate  DateTime @default(now()) 
   creditId  Int    @unique
   credit    credit @relation("CreditToBill", fields: [creditId], references: [idcredit])
 }

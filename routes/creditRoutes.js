@@ -1,9 +1,11 @@
 import express from 'express';
-import { GetAllCredits, GetCreditById } from '../controllers/creditController.js';
+import { GetAllCredits, GetCreditsByDates,GetCreditById } from '../controllers/creditController.js';
 
 const router = express.Router();
 
 router.get('/',GetAllCredits);
+
+router.get('/dates', GetCreditsByDates);
 
 router.get('/:id',GetCreditById);
 
