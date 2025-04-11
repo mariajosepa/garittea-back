@@ -18,7 +18,7 @@ model credit {
   applicantperson                       Int     
   managingperson                        Int
   debtamount                            Int
-  state                                 Int
+  state                                 Int     @default(1)
   faculty                               Int
   bill                                  bill?   @relation("CreditToBill")
   person_credit_applicantpersonToperson person  @relation("credit_applicantpersonToperson", fields: [applicantperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "applicantperson")

@@ -19,7 +19,7 @@ export const getCreditsByDates = async (startDate, endDate) => {
   if (new Date(startDate) > new Date(endDate)) {
     throw new Error('Start date must be before end date');
   }
-  
+
   return await prisma.credit.findMany({
     where: {
       creationdate: {
@@ -46,6 +46,74 @@ export const getCreditById = async (id) => {
       person_credit_managingpersonToperson: true,
       faculty_credit_facultyTofaculty: true,
       users: true,
+    },
+  });
+}
+
+export const postCredit = async (creditData) => {
+  const { userId, applicantId, managingPersonId, facultyId, debtAmount } = creditData;
+  if (!userId || !applicantId || !managingPersonId || !facultyId || !debtAmount) {
+    throw new Error('All fields are required');
+  }
+  if (isNaN(debtAmount)) {
+    throw new Error('Debt amount must be a number');
+  }
+
+  const userExists = await prisma.users.findUnique({
+    where: { idusers: userId },
+  });
+  if (!userExists) {
+    throw new Error('User does not exist');
+  }
+
+  // Validar existencia de la persona (applicant)
+  const applicantExists = await prisma.person.findUnique({
+    where: { idperson: applicantId },
+  });
+  if (!applicantExists) {
+    throw new Error('Applicant does not exist');
+  }
+
+  // Validar existencia de la persona (managing)
+  const managingExists = await prisma.person.findUnique({
+    where: { idperson: managingPersonId },
+  });
+  if (!managingExists) {
+    throw new Error('Managing person does not exist');
+  }
+
+  // Validar existencia de la facultad
+  const facultyExists = await prisma.faculty.findUnique({
+    where: { idfaculty: facultyId },
+  });
+  if (!facultyExists) {
+    throw new Error('Faculty does not exist');
+  }
+
+
+  return await prisma.credit.create({
+    data: {
+      users: {
+        connect: {
+          idusers: userId,
+        },
+      },
+      person_credit_applicantpersonToperson: {
+        connect: {
+          idperson: applicantId,
+        },
+      },
+      person_credit_managingpersonToperson: {
+        connect: {
+          idperson: managingPersonId,
+        },
+      },
+      faculty_credit_facultyTofaculty: {
+        connect: {
+          idfaculty: facultyId,
+        },
+      },
+      debtamount: debtAmount,
     },
   });
 }
