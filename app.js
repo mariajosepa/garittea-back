@@ -11,6 +11,7 @@ app.use(cors({
 }));
 
 //define the routes
+app.use(express.json());
 app.use('/person', personRoutes);
 app.use('/credits', creditRoutes),
 app.get('/', (req, res) => {

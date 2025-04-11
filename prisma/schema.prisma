@@ -18,7 +18,7 @@ model credit {
   applicantperson                       Int     
   managingperson                        Int
   debtamount                            Int
-  state                                 Int
+  state                                 Int     @default(1)
   faculty                               Int
   bill                                  bill?   @relation("CreditToBill")
   person_credit_applicantpersonToperson person  @relation("credit_applicantpersonToperson", fields: [applicantperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "applicantperson")
@@ -83,4 +83,16 @@ model bill {
   billdate  DateTime @default(now()) 
   creditId  Int    @unique
   credit    credit @relation("CreditToBill", fields: [creditId], references: [idcredit])
+
+  creditNoteInitial creditNote[] @relation("CreditNoteInitialBill")
+  creditNoteFinish  creditNote[] @relation("CreditNoteFinishBill")
+}
+
+model creditNote {
+  idcreditNote  Int   @id // Este valor lo define el usuario, sin autoincremento
+  idInicialBill Int
+  idFinishBill  Int?
+
+  initialBill bill  @relation("CreditNoteInitialBill", fields: [idInicialBill], references: [idbill])
+  finishBill  bill? @relation("CreditNoteFinishBill", fields: [idFinishBill], references: [idbill])
 }
