@@ -2,6 +2,7 @@ import express from 'express'
 import personRoutes from './routes/personRoutes.js'
 import creditRoutes from './routes/creditRoutes.js';
 import creditNoteRoutes from './routes/creditNoteRoutes.js';
+import facultyRoutes from './routes/facultyRoutes.js';
 import cors from 'cors';
 const PORT = process.env.PORT || 3000;
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use('/person', personRoutes);
 app.use('/credits', creditRoutes);
 app.use('/creditNotes', creditNoteRoutes);
+app.use('/faculty', facultyRoutes);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the root route!');
