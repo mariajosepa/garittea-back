@@ -61,7 +61,7 @@ export const deleteCreditById = async (id) => {
   });
 
   if (!credit) {
-    throw new Error('Crédito no encontrado');
+    throw new Error('Crédito no encontrados');
   }
 
   if (credit.bill) {
