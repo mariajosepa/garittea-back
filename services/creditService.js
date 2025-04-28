@@ -3,6 +3,9 @@ import prisma from '../prisma/client.js';
 
 export const getAllCredits = async () => {
   return await prisma.credit.findMany({
+    orderBy: { 
+      idcredit: 'desc'
+    },
     include: {
       users: true,
       person_credit_applicantpersonToperson: true,
@@ -167,3 +170,27 @@ export const postCredit = async (creditData) => {
     },
   });
 }
+
+export const getCreditsByFacultyAndState = async (facultyId, state) => {
+  const whereClause = {};
+
+  if (facultyId) {
+    // Filtra por la columna 'faculty' (la FK)
+    whereClause.faculty = Number(facultyId);
+  }
+
+  if (state && state.trim() !== '') {
+    whereClause.state = Number(state);
+  }
+
+  return await prisma.credit.findMany({
+    where: whereClause,
+    orderBy: { idcredit: 'desc' },
+    include: {
+      users: true,
+      person_credit_applicantpersonToperson: true,
+      person_credit_managingpersonToperson: true,
+      faculty_credit_facultyTofaculty: true,
+    },
+  });
+};

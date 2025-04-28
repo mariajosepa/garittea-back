@@ -1,4 +1,4 @@
-import { getAllCredits, getCreditsByDates, getCreditById, getCreditsByIdManagingPerson, postCredit, deleteCreditById } from '../services/creditService.js';
+import { getAllCredits, getCreditsByDates, getCreditById, getCreditsByIdManagingPerson, postCredit, deleteCreditById, getCreditsByFacultyAndState } from '../services/creditService.js';
 import { formatCredit } from '../formatters/creditFormatter.js';
 
 //Get all credits
@@ -81,5 +81,16 @@ export const PostCredit = async (req,res) => {
   }
   catch(error){
     res.status(500).json({error: error.message});
+  }
+}
+
+export const GetCreditsByFacultyAndState = async (req, res) => {
+  const { faculty, state } = req.query;
+  try {
+    const credits = await getCreditsByFacultyAndState(faculty, state);
+    const formattedCredits = credits.map(formatCredit);
+    res.status(200).json(formattedCredits);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
