@@ -55,22 +55,27 @@ export const deleteCreditById = async (id) => {
 
   const credit = await prisma.credit.findUnique({
     where: { idcredit: numericId },
+    include: {
+      bill: true, // Traemos la factura asociada para verificarla
+    },
   });
 
   if (!credit) {
     throw new Error('Crédito no encontrado');
   }
 
-  await prisma.bill.deleteMany({
-    where: { creditId: numericId },
-  });
+  if (credit.bill) {
+    throw new Error('No se puede eliminar un crédito que ya tiene una factura asociada. Utilice una nota crédito para anularlo.');
+  }
 
+  // Como no tiene factura, se puede borrar el crédito
   await prisma.credit.delete({
     where: { idcredit: numericId },
   });
 
   return { deletedId: numericId };
-}
+};
+
 
 
 export const getCreditsByIdManagingPerson = async (id) => {
