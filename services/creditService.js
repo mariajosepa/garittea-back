@@ -79,6 +79,74 @@ export const deleteCreditById = async (id) => {
   return { deletedId: numericId };
 };
 
+export const updateCreditById = async (id, data) => {
+  const numericId = Number(id);
+
+  // Traemos el crédito incluyendo la factura y nota crédito
+  const credit = await prisma.credit.findUnique({
+    where: { idcredit: numericId },
+    include: {
+      bill: {
+        include: {
+          creditNoteInitial: true,
+        },
+      },
+    },
+  });
+
+  if (!credit) {
+    throw new Error('Crédito no encontrado.');
+  }
+
+  // Validaciones
+  if (credit.bill) {
+    // El crédito ya tiene factura
+    if (data.debtAmount !== undefined) {
+      throw new Error('No se puede cambiar el monto de deuda de un crédito que ya tiene factura.');
+    }
+    if (data.user !== undefined || data.applicant !== undefined) {
+      throw new Error('No se puede cambiar el usuario o solicitante de un crédito que ya tiene factura.');
+    }
+
+    // Validar nota crédito
+    if (credit.bill.creditNoteInitial) {
+      if (data.state !== undefined) {
+        throw new Error('No se puede cambiar el estado de un crédito que tiene una nota crédito asociada.');
+      }
+    }
+  }
+
+  // Preparamos los datos a actualizar
+  const updateData = {};
+
+  if (data.managingPersonId) {
+    updateData.person_credit_managingpersonToperson = {
+      connect: { idperson: data.managingPersonId },
+    };
+  }
+
+  if (data.debtAmount !== undefined) {
+    updateData.debtamount = data.debtAmount;
+  }
+
+  if (data.state !== undefined) {
+    updateData.state = data.state;
+  }
+
+  // Actualizamos el crédito
+  const updatedCredit = await prisma.credit.update({
+    where: { idcredit: numericId },
+    data: updateData,
+    include: {
+      users: true,
+      person_credit_applicantpersonToperson: true,
+      person_credit_managingpersonToperson: true,
+      faculty_credit_facultyTofaculty: true,
+    },
+  });
+
+  return updatedCredit;
+};
 
 
 export const getCreditsByIdManagingPerson = async (id) => {
