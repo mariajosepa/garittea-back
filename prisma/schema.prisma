@@ -72,9 +72,10 @@ model facultyEmail {
 
 model users {
   idusers   Int      @id @default(autoincrement())
+  email     String   @unique
   firstname String   @db.VarChar(45)
   lastname  String   @db.VarChar(45)
-  password  String   @db.VarChar(45)
+  password  String   @db.Text
   credit    credit[]
 }
 

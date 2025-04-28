@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -11,18 +12,17 @@ const NUM_CREDITS = 50;
 async function main() {
   console.log(`🌱 Start seeding ...`);
 
-  // 1. Users
-  const createdUsers = [];
-  for (let i = 0; i < NUM_USERS; i++) {
-    const user = await prisma.users.create({
-      data: {
-        firstname: faker.person.firstName(),
-        lastname: faker.person.lastName(),
-        password: faker.internet.password(),
-      },
-    });
-    createdUsers.push(user);
-  }
+  const adminPasswordHash = await bcrypt.hash('admin123', 10);
+  const admin = await prisma.users.create({
+    data: {
+      firstname: 'Admin',
+      lastname: 'User',
+      email: 'admin@example.com',
+      password: adminPasswordHash,
+    },
+  });
+
+  const createdUsers = [admin];
 
   // 2. People
   const createdPeople = [];
@@ -71,7 +71,7 @@ async function main() {
   // 4. Credits + Bills
   let createdCredits = 0;
   for (let i = 0; i < NUM_CREDITS; i++) {
-    const randomUser = faker.helpers.arrayElement(createdUsers);
+    const randomUser = createdUsers[0];
     const randomApplicant = faker.helpers.arrayElement(createdPeople);
     const randomManager = faker.helpers.arrayElement(
       [null, ...createdPeople.filter(p => p.idperson !== randomApplicant.idperson)]
