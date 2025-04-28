@@ -1,5 +1,5 @@
 import { formatCreditNote } from "../formatters/creditNoteFormatter.js";
-import { getAllCreditNotes } from "../services/creditNoteService.js";
+import { getAllCreditNotes, createNoteCredit } from "../services/creditNoteService.js";
 
 
 export const GetAllCreditNotes = async (req, res) => {
@@ -10,4 +10,20 @@ export const GetAllCreditNotes = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+}
+
+export const CreateNoteCredit = async (req, res) => {
+  try {
+    const { idcreditNote, idInicialBill } = req.body;
+
+    if (!idcreditNote || !idInicialBill) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    const createdCreditNote = await createNoteCredit(req.body);
+
+    res.status(201).json(createdCreditNote);
+  } catch (error) {
+    console.log("BRUHHH");
+    res.status(500).json({ error: error.message });
+  }
 }

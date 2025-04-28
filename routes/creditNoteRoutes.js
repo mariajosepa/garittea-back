@@ -1,8 +1,10 @@
 import express from 'express';
-import { GetAllCreditNotes } from '../controllers/creditNoteController.js';
+import { GetAllCreditNotes, CreateNoteCredit } from '../controllers/creditNoteController.js';
 
 const router = express.Router();
 
 router.get('/', GetAllCreditNotes);
+router.post('/', CreateNoteCredit);
+
 
 export default router;
