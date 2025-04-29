@@ -1,9 +1,9 @@
 import express from 'express';
-import { massiveCreateBill } from '../controllers/billController.js';
+import { dispatchOrder, updateBillState } from '../controllers/billController.js';
 
 const router = express.Router();
 
-// Ruta para crear una factura asociada a un crédito
-router.post('/massive', massiveCreateBill);
+router.post('/dispatch', dispatchOrder); // Crear bill
+router.patch('/:id/update-status', updateBillState); // Actualizar estado de bill
 
 export default router;

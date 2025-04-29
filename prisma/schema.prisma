@@ -11,89 +11,89 @@ generator erd {
   provider = "prisma-erd-generator"
 }
 
-model credit {
-  idcredit                              Int     @id @default(autoincrement())
+model order {
+  idOrder                              Int     @id @default(autoincrement())
   creationdate                         DateTime @default(now())
   user                                  Int
-  applicantperson                       Int     
-  managingperson                        Int
+  applicantperson                      Int     
+  managingperson                       Int
   debtamount                            Int
   state                                 Int     @default(1)
   faculty                               Int
-  bill                                  bill?   @relation("CreditToBill")
-  person_credit_applicantpersonToperson person  @relation("credit_applicantpersonToperson", fields: [applicantperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "applicantperson")
-  faculty_credit_facultyTofaculty       faculty @relation("credit_facultyTofaculty", fields: [faculty], references: [idfaculty], onDelete: NoAction, onUpdate: NoAction, map: "faculty")
-  person_credit_managingpersonToperson  person @relation("credit_managingpersonToperson", fields: [managingperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "managingperson")
-  users                                 users   @relation(fields: [user], references: [idusers], onDelete: NoAction, onUpdate: NoAction, map: "user")
+  bill                                  bill?   @relation("OrderToBill")
+  person_credit_applicantpersonToperson person  @relation("credit_applicantpersonToperson", fields: [applicantperson], references: [idperson])
+  faculty_credit_facultyTofaculty       faculty @relation("credit_facultyTofaculty", fields: [faculty], references: [idfaculty])
+  person_credit_managingpersonToperson  person  @relation("credit_managingpersonToperson", fields: [managingperson], references: [idperson])
+  users                                 users   @relation(fields: [user], references: [idusers])
 
-  @@index([applicantperson], map: "applicantperson_idx")
-  @@index([faculty], map: "faculty_idx")
-  @@index([managingperson], map: "managingperson_idx")
-  @@index([user], map: "user_idx")
-}
-
-model faculty {
-  idfaculty                      Int      @id @default(autoincrement())
-  name                           String   @db.VarChar(45)
-  phone                          String
-  associatedemails               String   @db.VarChar(45)
-  inchargeperson                 Int?
-  credit_credit_facultyTofaculty credit[] @relation("credit_facultyTofaculty")
-  person                         person?  @relation(fields: [inchargeperson], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "inchargeperson")
-  facultyEmail              facultyEmail?  @relation("faculty_facultyEmail")
-
-  @@index([inchargeperson], map: "inchargeperson_idx")
-}
-
-model person {
-  idperson                              Int       @id @default(autoincrement())
-  name                                  String    @db.VarChar(45)
-  lastname                              String    @db.VarChar(45)
-  cellphone                             String
-  email                                 email?    @relation("email_person")
-  credit_credit_applicantpersonToperson credit[]  @relation("credit_applicantpersonToperson")
-  credit_credit_managingpersonToperson  credit[]  @relation("credit_managingpersonToperson")
-  faculty                               faculty[]
-}
-
-model email{
-  idEmail Int  @id @default(autoincrement())
-  email String @db.VarChar(300)
-  personId Int @unique
-  person person @relation("email_person", fields: [personId], references: [idperson], onDelete: NoAction, onUpdate: NoAction, map: "person")   
-}
-
-model facultyEmail {
-  idEmail Int  @id @default(autoincrement())
-  email String @db.VarChar(300)
-  facultyId Int @unique
-  faculty faculty @relation("faculty_facultyEmail", fields: [facultyId], references: [idfaculty], onDelete: NoAction, onUpdate: NoAction, map: "faculty")
-}
-
-model users {
-  idusers   Int      @id @default(autoincrement())
-  email     String   @unique
-  firstname String   @db.VarChar(45)
-  lastname  String   @db.VarChar(45)
-  password  String   @db.Text
-  credit    credit[]
+  @@index([applicantperson])
+  @@index([faculty])
+  @@index([managingperson])
+  @@index([user])
 }
 
 model bill {
   idbill    Int    @id @default(autoincrement())
   billdate  DateTime @default(now()) 
-  creditId  Int    @unique
-  credit    credit @relation("CreditToBill", fields: [creditId], references: [idcredit])
-
-  creditNoteInitial creditNote[] @relation("CreditNoteInitialBill")
-  creditNoteFinish  creditNote[] @relation("CreditNoteFinishBill")
+  orderId   Int    @unique
+  order     order  @relation("OrderToBill", fields: [orderId], references: [idOrder])
+  state     String   @default("activo") // NUEVO campo: activo o cancelado
+  orderNoteInitial orderNote[] @relation("OrderNoteInitialBill")
+  orderNoteFinish  orderNote[] @relation("OrderNoteFinishBill")
 }
 
-model creditNote {
-  idcreditNote  Int   @id // Este valor lo define el usuario, sin autoincremento
+model orderNote {
+  idorderNote   Int   @id // Este valor lo define el usuario
   idInicialBill Int
   idFinishBill  Int?
 
-  initialBill bill  @relation("CreditNoteInitialBill", fields: [idInicialBill], references: [idbill])
-  finishBill  bill? @relation("CreditNoteFinishBill", fields: [idFinishBill], references: [idbill])
+  initialBill bill @relation("OrderNoteInitialBill", fields: [idInicialBill], references: [idbill])
+  finishBill  bill? @relation("OrderNoteFinishBill", fields: [idFinishBill], references: [idbill])
+}
+
+model faculty {
+  idfaculty Int @id @default(autoincrement())
+  name String @db.VarChar(45)
+  phone String
+  associatedemails String @db.VarChar(45)
+  inchargeperson Int?
+  credit_credit_facultyTofaculty credit[] @relation("credit_facultyTofaculty")
+  person person? @relation(fields: [inchargeperson], references: [idperson])
+  facultyEmail facultyEmail? @relation("faculty_facultyEmail")
+
+  @@index([inchargeperson])
+}
+
+model person {
+  idperson Int @id @default(autoincrement())
+  name String @db.VarChar(45)
+  lastname String @db.VarChar(45)
+  cellphone String
+  email email? @relation("email_person")
+  credit_credit_applicantpersonToperson credit[] @relation("credit_applicantpersonToperson")
+  credit_credit_managingpersonToperson credit[] @relation("credit_managingpersonToperson")
+  faculty faculty[]
+}
+
+model email {
+  idEmail Int @id @default(autoincrement())
+  email String @db.VarChar(300)
+  personId Int @unique
+  person person @relation("email_person", fields: [personId], references: [idperson])
+}
+
+model facultyEmail {
+  idEmail Int @id @default(autoincrement())
+  email String @db.VarChar(300)
+  facultyId Int @unique
+  faculty faculty @relation("faculty_facultyEmail", fields: [facultyId], references: [idfaculty])
+}
+
+model users {
+  idusers Int @id @default(autoincrement())
+  email String @unique
+  firstname String @db.VarChar(45)
+  lastname String @db.VarChar(45)
+  password String @db.Text
+  credit credit[]
 }

@@ -1,38 +1,42 @@
-import { createBill } from '../services/billService.js';
-import { getCreditById } from '../services/creditService.js';
+import { createBillForOrder, updateBillStateById } from '../services/billService.js';
+import { getOrderById } from '../services/creditService.js'; // implementar
 
-export const massiveCreateBill = async (req, res) => {
+export const dispatchOrder = async (req, res) => {
+  const { orderId } = req.body;
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'orderId es obligatorio.' });
+  }
+
   try {
-    const { creditId, billDate } = req.body;
-
-    if (!creditId) {
-      return res.status(400).json({ error: 'El creditId es obligatorio.' });
+    const order = await getOrderById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Pedido no encontrado.' });
     }
 
-    // Verificamos que el crédito exista
-    const credit = await getCreditById(creditId);
-
-    if (!credit) {
-      return res.status(404).json({ error: 'Crédito no encontrado.' });
+    if (order.bill) {
+      return res.status(400).json({ error: 'El pedido ya tiene factura asociada.' });
     }
 
-    // Verificamos que no tenga ya factura
-    if (credit.bill) {
-      return res.status(400).json({ error: 'Este crédito ya tiene una factura asociada.' });
-    }
-
-    // Creamos la factura
-    const bill = await createBill({
-      creditId,
-      billDate: billDate ? new Date(billDate) : undefined, // Si viene fecha, usamos esa; si no, fecha actual
-    });
-
-    res.status(201).json({
-      message: 'Factura creada exitosamente.',
-      bill,
-    });
+    const bill = await createBillForOrder(orderId);
+    res.status(201).json({ message: 'Factura creada con éxito.', bill });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error interno al crear la factura.', details: error.message });
+    res.status(500).json({ error: 'Error al despachar pedido.', details: error.message });
+  }
+};
+
+export const updateBillState = async (req, res) => {
+  const { id } = req.params;
+  const { state } = req.body;
+
+  if (!state || !['activo', 'cancelado'].includes(state)) {
+    return res.status(400).json({ error: 'El estado debe ser "activo" o "cancelado".' });
+  }
+
+  try {
+    const updated = await updateBillStateById(Number(id), state);
+    res.status(200).json({ message: 'Estado actualizado correctamente.', bill: updated });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar estado.', details: error.message });
   }
 };

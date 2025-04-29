@@ -262,3 +262,10 @@ export const getCreditsByFacultyAndState = async (facultyId, state) => {
     },
   });
 };
+
+export const getOrderById = async (id) => {
+  return await prisma.order.findUnique({
+    where: { idOrder: Number(id) },
+    include: { bill: true }
+  });
+};
