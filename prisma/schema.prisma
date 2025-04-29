@@ -12,19 +12,19 @@ generator erd {
 }
 
 model order {
-  idOrder                              Int     @id @default(autoincrement())
-  creationdate                         DateTime @default(now())
-  user                                  Int
-  applicantperson                      Int     
-  managingperson                       Int
-  debtamount                            Int
-  state                                 Int     @default(1)
-  faculty                               Int
-  bill                                  bill?   @relation("OrderToBill")
-  person_credit_applicantpersonToperson person  @relation("credit_applicantpersonToperson", fields: [applicantperson], references: [idperson])
-  faculty_credit_facultyTofaculty       faculty @relation("credit_facultyTofaculty", fields: [faculty], references: [idfaculty])
-  person_credit_managingpersonToperson  person  @relation("credit_managingpersonToperson", fields: [managingperson], references: [idperson])
-  users                                 users   @relation(fields: [user], references: [idusers])
+  idOrder         Int       @id @default(autoincrement())
+  creationdate    DateTime  @default(now())
+  user            Int
+  applicantperson Int
+  managingperson  Int
+  debtamount      Int
+  state           Int       @default(1)
+  faculty         Int
+  bill            bill?     @relation("OrderToBill")
+  applicant       person    @relation("OrderApplicant", fields: [applicantperson], references: [idperson])
+  manager         person    @relation("OrderManager", fields: [managingperson], references: [idperson])
+  facultyRel      faculty   @relation("OrderFaculty", fields: [faculty], references: [idfaculty])
+  users           users     @relation(fields: [user], references: [idusers])
 
   @@index([applicantperson])
   @@index([faculty])
@@ -33,33 +33,29 @@ model order {
 }
 
 model bill {
-  idbill    Int      @id @default(autoincrement())
-  billdate  DateTime @default(now()) 
-<<<<<<< Updated upstream
-  orderId   Int    @unique
-  order     order  @relation("OrderToBill", fields: [orderId], references: [idOrder])
-  state     String   @default("activo") // NUEVO campo: activo o cancelado
-  orderNoteInitial orderNote[] @relation("OrderNoteInitialBill")
-  orderNoteFinish  orderNote[] @relation("OrderNoteFinishBill")
+  idbill     Int       @id @default(autoincrement())
+  billdate   DateTime  @default(now()) 
+  orderId    Int       @unique
+  order      order     @relation("OrderToBill", fields: [orderId], references: [idOrder])
+  state      String    @default("activo")
+  creditNotes creditNote[] @relation("BillToCreditNotes")
 }
 
-model orderNote {
-  idorderNote   Int   @id // Este valor lo define el usuario
-  idInicialBill Int
-  idFinishBill  Int?
-
-  initialBill bill @relation("OrderNoteInitialBill", fields: [idInicialBill], references: [idbill])
-  finishBill  bill? @relation("OrderNoteFinishBill", fields: [idFinishBill], references: [idbill])
+model creditNote {
+  idcreditNote Int   @id @default(autoincrement())
+  amount       Int
+  idBill       Int
+  bill         bill @relation("BillToCreditNotes", fields: [idBill], references: [idbill])
 }
 
 model faculty {
-  idfaculty Int @id @default(autoincrement())
-  name String @db.VarChar(45)
-  phone String
+  idfaculty    Int      @id @default(autoincrement())
+  name         String   @db.VarChar(45)
+  phone        String
   associatedemails String @db.VarChar(45)
   inchargeperson Int?
-  credit_credit_facultyTofaculty credit[] @relation("credit_facultyTofaculty")
-  person person? @relation(fields: [inchargeperson], references: [idperson])
+  orders       order[]  @relation("OrderFaculty")
+  person       person?  @relation(fields: [inchargeperson], references: [idperson])
   facultyEmail facultyEmail? @relation("faculty_facultyEmail")
 
   @@index([inchargeperson])
@@ -67,49 +63,34 @@ model faculty {
 
 model person {
   idperson Int @id @default(autoincrement())
-  name String @db.VarChar(45)
+  name     String @db.VarChar(45)
   lastname String @db.VarChar(45)
   cellphone String
-  email email? @relation("email_person")
-  credit_credit_applicantpersonToperson credit[] @relation("credit_applicantpersonToperson")
-  credit_credit_managingpersonToperson credit[] @relation("credit_managingpersonToperson")
-  faculty faculty[]
+  email    email? @relation("email_person")
+  applicantOrders order[] @relation("OrderApplicant")
+  managerOrders   order[] @relation("OrderManager")
+  faculty         faculty[]
 }
 
 model email {
-  idEmail Int @id @default(autoincrement())
-  email String @db.VarChar(300)
-  personId Int @unique
-  person person @relation("email_person", fields: [personId], references: [idperson])
+  idEmail  Int    @id @default(autoincrement())
+  email    String @db.VarChar(300)
+  personId Int    @unique
+  person   person @relation("email_person", fields: [personId], references: [idperson])
 }
 
 model facultyEmail {
-  idEmail Int @id @default(autoincrement())
-  email String @db.VarChar(300)
-  facultyId Int @unique
-  faculty faculty @relation("faculty_facultyEmail", fields: [facultyId], references: [idfaculty])
+  idEmail    Int     @id @default(autoincrement())
+  email      String  @db.VarChar(300)
+  facultyId  Int     @unique
+  faculty    faculty @relation("faculty_facultyEmail", fields: [facultyId], references: [idfaculty])
 }
 
 model users {
   idusers Int @id @default(autoincrement())
-  email String @unique
+  email   String @unique
   firstname String @db.VarChar(45)
-  lastname String @db.VarChar(45)
-  password String @db.Text
-  credit credit[]
+  lastname  String @db.VarChar(45)
+  password  String @db.Text
+  orders    order[]
 }
-=======
-  creditId  Int      @unique
-  credit    credit   @relation("CreditToBill", fields: [creditId], references: [idcredit])
-
-  creditNotes creditNote[] @relation("BillToCreditNotes")
-}
-
-model creditNote {
-  idcreditNote Int   @id @default(autoincrement())
-  amount       Int
-
-  idBill       Int
-  bill         bill @relation("BillToCreditNotes", fields: [idBill], references: [idbill])
-}
->>>>>>> Stashed changes
