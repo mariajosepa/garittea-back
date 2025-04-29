@@ -8,3 +8,10 @@ export const getAllFaculties = async () => {
         },
     });
 }
+
+export const getFacultyIdByName = async (name) => {
+  return await prisma.faculty.findUnique({
+    where: { name },
+    select: { idfaculty: true },
+  });
+};
