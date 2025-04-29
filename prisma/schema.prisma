@@ -33,8 +33,9 @@ model order {
 }
 
 model bill {
-  idbill    Int    @id @default(autoincrement())
+  idbill    Int      @id @default(autoincrement())
   billdate  DateTime @default(now()) 
+<<<<<<< Updated upstream
   orderId   Int    @unique
   order     order  @relation("OrderToBill", fields: [orderId], references: [idOrder])
   state     String   @default("activo") // NUEVO campo: activo o cancelado
@@ -97,3 +98,18 @@ model users {
   password String @db.Text
   credit credit[]
 }
+=======
+  creditId  Int      @unique
+  credit    credit   @relation("CreditToBill", fields: [creditId], references: [idcredit])
+
+  creditNotes creditNote[] @relation("BillToCreditNotes")
+}
+
+model creditNote {
+  idcreditNote Int   @id @default(autoincrement())
+  amount       Int
+
+  idBill       Int
+  bill         bill @relation("BillToCreditNotes", fields: [idBill], references: [idbill])
+}
+>>>>>>> Stashed changes

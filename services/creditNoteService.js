@@ -8,12 +8,12 @@ export const getAllCreditNotes = async () => {
         }
     });
 }
-export const createNoteCredit = async ({idcreditNote, idInicialBill, idFinishBill}) => {
+export const createNoteCredit = async ({ idBill, amount, reason }) => {
   return await prisma.creditNote.create({
     data : {
-      idcreditNote,
-      idInicialBill,
-      ...(idFinishBill !== undefined && { idFinishBill })
+      idBill,
+      amount,
+      reason
     }
   })
 }

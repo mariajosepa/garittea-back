@@ -1,3 +1,4 @@
+// prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import bcrypt from 'bcrypt';
@@ -12,6 +13,7 @@ const NUM_CREDITS = 50;
 async function main() {
   console.log(`🌱 Start seeding ...`);
 
+  // Create admin user
   const adminPasswordHash = await bcrypt.hash('admin123', 10);
   const admin = await prisma.users.create({
     data: {
@@ -24,7 +26,20 @@ async function main() {
 
   const createdUsers = [admin];
 
-  // 2. People
+  // Create random users
+  for (let i = 0; i < NUM_USERS; i++) {
+    const user = await prisma.users.create({
+      data: {
+        firstname: faker.person.firstName(),
+        lastname: faker.person.lastName(),
+        email: faker.internet.email(),
+        password: await bcrypt.hash(faker.internet.password(), 10),
+      },
+    });
+    createdUsers.push(user);
+  }
+
+  // Create people
   const createdPeople = [];
   for (let i = 0; i < NUM_PEOPLE; i++) {
     const firstName = faker.person.firstName();
@@ -44,7 +59,7 @@ async function main() {
     createdPeople.push(person);
   }
 
-  // 3. Faculties
+  // Create faculties
   const createdFaculties = [];
   for (let i = 0; i < NUM_FACULTIES; i++) {
     const maybeIncharge = faker.helpers.arrayElement([null, ...createdPeople]);
@@ -68,10 +83,10 @@ async function main() {
     createdFaculties.push(faculty);
   }
 
-  // 4. Credits + Bills
+  // Create credits + bills
   let createdCredits = 0;
   for (let i = 0; i < NUM_CREDITS; i++) {
-    const randomUser = createdUsers[0];
+    const randomUser = faker.helpers.arrayElement(createdUsers);
     const randomApplicant = faker.helpers.arrayElement(createdPeople);
     const randomManager = faker.helpers.arrayElement(
       [null, ...createdPeople.filter(p => p.idperson !== randomApplicant.idperson)]
@@ -79,19 +94,16 @@ async function main() {
     const randomFaculty = faker.helpers.arrayElement(createdFaculties);
 
     try {
-      // Creamos el credit primero
       const credit = await prisma.credit.create({
         data: {
           user: randomUser.idusers,
           applicantperson: randomApplicant.idperson,
           managingperson: randomManager?.idperson || randomApplicant.idperson,
           debtamount: faker.number.int({ min: 1000, max: 50000 }),
-          state: faker.number.int({ min: 1, max: 3 }),
           faculty: randomFaculty.idfaculty,
         },
       });
 
-      // Luego creamos el bill asociado a ese credit
       await prisma.bill.create({
         data: {
           creditId: credit.idcredit,
