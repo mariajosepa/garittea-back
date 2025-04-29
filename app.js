@@ -9,6 +9,7 @@ import creditRoutes from './routes/creditRoutes.js';
 import creditNoteRoutes from './routes/creditNoteRoutes.js';
 import facultyRoutes from './routes/facultyRoutes.js';
 import { authenticateJWT } from './middleware/jwtAuth.js';
+import billRoutes from './routes/billRoutes.js';
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -28,6 +29,7 @@ app.use('/person', authenticateJWT, personRoutes);
 app.use('/credits', authenticateJWT, creditRoutes);
 app.use('/creditNotes', authenticateJWT, creditNoteRoutes);
 app.use('/faculty', authenticateJWT, facultyRoutes);
+app.use('/bills', authenticateJWT, billRoutes);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the root route!');
