@@ -1,5 +1,5 @@
 import { createBillForOrder, updateBillStateById } from '../services/billService.js';
-import { getOrderById } from '../services/creditService.js'; // implementar
+import { getOrderById } from '../services/orderService.js'; // implementar
 
 export const dispatchOrder = async (req, res) => {
   const { orderId } = req.body;

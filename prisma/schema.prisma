@@ -44,6 +44,7 @@ model bill {
 model creditNote {
   idcreditNote Int   @id @default(autoincrement())
   amount       Int
+  reason       String
   idBill       Int
   bill         bill @relation("BillToCreditNotes", fields: [idBill], references: [idbill])
 }

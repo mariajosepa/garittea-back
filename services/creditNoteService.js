@@ -8,12 +8,20 @@ export const getAllCreditNotes = async () => {
         }
     });
 }
+
+
 export const createNoteCredit = async ({ idBill, amount, reason }) => {
-  return await prisma.creditNote.create({
-    data : {
-      idBill,
-      amount,
-      reason
-    }
-  })
-}
+  try {
+    const note = await prisma.creditNote.create({
+      data: {
+        idBill,
+        amount,
+        reason,
+      },
+    });
+    return note;
+  } catch (error) {
+    console.error('❌ Error creating credit note:', error);
+    throw new Error('Error creating credit note'); // you can throw custom error
+  }
+};
