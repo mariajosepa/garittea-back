@@ -9,7 +9,6 @@ export const createBill = async ({ creditId, billDate = new Date() }) => {
   });
 };
 
-// NOTA: A futuro podrías aquí también crear una creditNote si detectas diferencias de montos.
 
 export const createBillForOrder = async (orderId) => {
   return await prisma.bill.create({
@@ -28,4 +27,29 @@ export const updateBillStateById = async (idbill, newState) => {
       state: newState
     }
   });
+};
+
+export const findAssociatedNotes = async (consecutivos) => {
+  // Convierte a número los consecutivos (ej: "FEG 2684" → 2684)
+  const parsedIds = consecutivos.map(c => parseInt(c.replace(/\D/g, ''), 10)).filter(Boolean);
+
+  const notes = await prisma.creditNote.findMany({
+    where: {
+      initialBill: {
+        idbill: { in: parsedIds },
+      },
+    },
+    include: {
+      initialBill: true,
+      finalBill: true,
+    },
+  });
+
+  return notes.map(note => ({
+    idNote: note.idcreditNote,
+    idInitialBill: note.initialBillId,
+    idFinalBill: note.finalBillId || null,
+    reason: note.reason,
+    amount: note.amount,
+  }));
 };

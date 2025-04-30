@@ -8,10 +8,12 @@ const NUM_USERS = 10;
 const NUM_PEOPLE = 20;
 const NUM_FACULTIES = 5;
 const NUM_ORDERS = 50;
+const NUM_CREDIT_NOTES = 10;
 
 async function main() {
   console.log(`🌱 Start seeding ...`);
 
+  // 1. Admin user
   const adminPasswordHash = await bcrypt.hash('admin123', 10);
   const admin = await prisma.users.create({
     data: {
@@ -24,6 +26,7 @@ async function main() {
 
   const createdUsers = [admin];
 
+  // 2. Random users
   for (let i = 0; i < NUM_USERS; i++) {
     const user = await prisma.users.create({
       data: {
@@ -36,6 +39,7 @@ async function main() {
     createdUsers.push(user);
   }
 
+  // 3. People
   const createdPeople = [];
   for (let i = 0; i < NUM_PEOPLE; i++) {
     const firstName = faker.person.firstName();
@@ -55,6 +59,7 @@ async function main() {
     createdPeople.push(person);
   }
 
+  // 4. Faculties
   const createdFaculties = [];
   for (let i = 0; i < NUM_FACULTIES; i++) {
     const maybeIncharge = faker.helpers.arrayElement([null, ...createdPeople]);
@@ -78,7 +83,8 @@ async function main() {
     createdFaculties.push(faculty);
   }
 
-  let createdOrders = 0;
+  // 5. Orders + Bills
+  const createdBills = [];
   for (let i = 0; i < NUM_ORDERS; i++) {
     const randomUser = faker.helpers.arrayElement(createdUsers);
     const randomApplicant = faker.helpers.arrayElement(createdPeople);
@@ -98,19 +104,45 @@ async function main() {
         },
       });
 
-      await prisma.bill.create({
+      const bill = await prisma.bill.create({
         data: {
           orderId: order.idOrder,
         },
       });
 
-      createdOrders++;
+      createdBills.push(bill);
     } catch (err) {
       console.error(`❌ Error creating order #${i + 1}:`, err.message);
     }
   }
 
-  console.log(`✅ ${createdOrders} orders with associated bills created.`);
+  // 6. Credit Notes (usando bills creadas)
+  let createdNotes = 0;
+  for (let i = 0; i < NUM_CREDIT_NOTES; i++) {
+    if (createdBills.length < 2) break;
+
+    const initialBill = faker.helpers.arrayElement(createdBills);
+    const finalBill = faker.helpers.arrayElement(
+      createdBills.filter(b => b.idbill !== initialBill.idbill)
+    );
+
+    try {
+      await prisma.creditNote.create({
+        data: {
+          amount: faker.number.int({ min: 100, max: 3000 }),
+          reason: faker.lorem.sentence(3),
+          initialBillId: initialBill.idbill,
+          finalBillId: finalBill.idbill,
+        },
+      });
+      createdNotes++;
+    } catch (err) {
+      console.error(`❌ Error creating creditNote #${i + 1}:`, err.message);
+    }
+  }
+
+  console.log(`✅ ${createdBills.length} orders with bills created.`);
+  console.log(`✅ ${createdNotes} credit notes created.`);
 }
 
 main()

@@ -38,15 +38,20 @@ model bill {
   orderId    Int       @unique
   order      order     @relation("OrderToBill", fields: [orderId], references: [idOrder])
   state      String    @default("activo")
-  creditNotes creditNote[] @relation("BillToCreditNotes")
+
+  initialNotes creditNote[] @relation("InitialBillRelation")
+  finalNotes   creditNote[] @relation("FinalBillRelation")
 }
 
 model creditNote {
-  idcreditNote Int   @id @default(autoincrement())
-  amount       Int
-  reason       String
-  idBill       Int
-  bill         bill @relation("BillToCreditNotes", fields: [idBill], references: [idbill])
+  idcreditNote   Int   @id @default(autoincrement())
+  amount         Int
+  reason         String
+  initialBillId  Int
+  finalBillId    Int
+
+  initialBill    bill @relation("InitialBillRelation", fields: [initialBillId], references: [idbill])
+  finalBill      bill? @relation("FinalBillRelation", fields: [finalBillId], references: [idbill])
 }
 
 model faculty {

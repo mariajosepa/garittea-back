@@ -3,11 +3,18 @@ export const formatCreditNote = (creditNote) => {
     id: creditNote.idcreditNote,
     amount: creditNote.amount,
     reason: creditNote.reason,
-    bill: creditNote.bill
+    initialBill: creditNote.initialBill
       ? {
-          idbill: creditNote.bill.idbill,
-          billdate: creditNote.bill.billdate,
-          state: creditNote.bill.state,
+          id: creditNote.initialBill.idbill,
+          date: creditNote.initialBill.billdate,
+          state: creditNote.initialBill.state,
+        }
+      : null,
+    finalBill: creditNote.finalBill
+      ? {
+          id: creditNote.finalBill.idbill,
+          date: creditNote.finalBill.billdate,
+          state: creditNote.finalBill.state,
         }
       : null,
   };

@@ -1,4 +1,5 @@
 import { createBillForOrder, updateBillStateById } from '../services/billService.js';
+import { findAssociatedNotes } from '../services/billService.js';
 import { getOrderById } from '../services/orderService.js'; // implementar
 
 export const dispatchOrder = async (req, res) => {
@@ -40,3 +41,20 @@ export const updateBillState = async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar estado.', details: error.message });
   }
 };
+
+
+export const getAssociatedNotes = async (req, res) => {
+  try {
+    const { consecutivos } = req.body;
+
+    if (!Array.isArray(consecutivos) || consecutivos.length === 0) {
+      return res.status(400).json({ error: 'Se debe enviar un listado de consecutivos.' });
+    }
+
+    const results = await findAssociatedNotes(consecutivos);
+    res.status(200).json(results);
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Error al buscar notas asociadas.' });
+  }
+};
+

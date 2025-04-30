@@ -1,39 +1,33 @@
 import prisma from '../prisma/client.js';
 
+// services/creditNoteService.js
 export const getAllCreditNotes = async () => {
   try {
     return await prisma.creditNote.findMany({
       include: {
-        bill: true, // Include the associated bill
+        initialBill: true,
+        finalBill: true,
       },
     });
   } catch (error) {
     console.error('❌ Error fetching credit notes:', error);
-    throw new Error('Failed to fetch credit notes from the database.');
+    throw new Error('Error fetching credit notes');
   }
 };
 
-
-
-export const createNoteCredit = async ({ idBill, amount, reason }) => {
+export const createNoteCredit = async ({ initialBillId, finalBillId, amount, reason }) => {
   try {
-    const billExists = await prisma.bill.findUnique({
-      where: { idbill: idBill },
-    });
-  
-    if (!billExists) {
-      throw new Error('Lo sentimos, no encontramos esa factura en el sistema.');
-    }
-    const note = await prisma.creditNote.create({
+    return await prisma.creditNote.create({
       data: {
-        idBill,
+        initialBillId,
+        finalBillId,
         amount,
         reason,
       },
     });
-    return note;
   } catch (error) {
     console.error('❌ Error creating credit note:', error);
-    throw new Error('Error creating credit note'); // you can throw custom error
+    throw new Error('Error creating credit note');
   }
 };
+

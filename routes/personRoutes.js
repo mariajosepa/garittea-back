@@ -5,7 +5,6 @@ import { GetPersonIdByName } from '../controllers/personController.js';
 const router = express.Router();
 
 router.get('/', GetPeople);
-
 router.get('/id', GetPersonIdByName); 
 
 export default router;
