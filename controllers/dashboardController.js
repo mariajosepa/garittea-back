@@ -1,15 +1,27 @@
 import {
     ventasCreditoMesService,
     notasCreditoAnioService,
-    facultadesTopService
+    facultadesTopService,
+    ventasPorMesService 
   } from '../services/dashboardService.js';
   
   export const getVentasCreditoMes = async (req, res) => {
     try {
       const total = await ventasCreditoMesService();
-      res.json({ total });
+      
+      res.json({ debtamount: total._sum.debtamount ?? 0 });
     } catch (err) {
       res.status(500).json({ error: 'Error al obtener ventas del mes' });
+    }
+  };
+
+  export const getVentasPorMes = async (req, res) => {
+    try {
+      const data = await ventasPorMesService();
+      res.json({ series: data });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al obtener ventas por mes' });
     }
   };
   

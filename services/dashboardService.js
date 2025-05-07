@@ -13,6 +13,35 @@ export const ventasCreditoMesService = async () => {
   });
 };
 
+export const ventasPorMesService = async () => {
+  const inicioAño = startOfYear(new Date());
+  const finAño = endOfYear(new Date());
+
+  const ventas = await prisma.order.findMany({
+    where: {
+      creationdate: {
+        gte: inicioAño,
+        lte: finAño,
+      },
+    },
+    select: {
+      creationdate: true,
+      debtamount: true,
+    },
+  });
+
+  // Inicializar array de 12 meses en 0
+  const mensual = Array(12).fill(0);
+
+  for (const venta of ventas) {
+    const mes = new Date(venta.creationdate).getMonth(); // 0 = enero, 11 = diciembre
+    mensual[mes] += venta.debtamount;
+  }
+
+  return mensual;
+};
+
+
 export const notasCreditoAnioService = async () => {
     const notas = await prisma.creditNote.findMany({
       where: {
