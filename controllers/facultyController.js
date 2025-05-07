@@ -1,5 +1,5 @@
 import { FormatFaculty } from "../formatters/facultyFormatter.js";
-import { getAllFaculties } from "../services/facultyService.js";
+import { getAllFaculties, getFacultyIdByName, createFaculty, updateFaculty, deleteFaculty } from "../services/facultyService.js";
 
 export const GetAllFaculties = async (req, res) => {
     try {
@@ -22,5 +22,66 @@ export const GetFacultyIdByName = async (req, res) => {
     res.status(200).json({ id: faculty.idfaculty });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const CreateFaculty = async (req, res) => {
+  console.log('CreateFaculty', req.body);
+  
+  // Extraer datos con la estructura correcta enviada desde el frontend
+  const { name, phone, facultyEmail, inchargeperson, associatedemails = '' } = req.body;
+  
+  // Validación de campos requeridos con la nueva estructura
+  if (!name) return res.status(400).json({ error: 'El nombre de la facultad es requerido' });
+  if (!inchargeperson || !inchargeperson.id) return res.status(400).json({ error: 'La persona a cargo es requerida' });
+  if (!facultyEmail || !facultyEmail.email) return res.status(400).json({ error: 'El correo electrónico es requerido' });
+
+  try {
+    const facultyData = {
+      name,
+      phone,
+      associatedemails, // Agregar este campo
+      inchargeperson: {
+        id: inchargeperson.id
+      },
+      facultyEmail: {
+        email: facultyEmail.email
+      }
+    };
+    
+    const faculty = await createFaculty(facultyData);
+    res.status(201).json(FormatFaculty(faculty));
+  } catch (error) {
+    console.error('Error creating faculty:', error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
+export const UpdateFaculty = async (req, res) => {
+  const { id } = req.params;
+  const { name, phone } = req.body;
+  if (!id) return res.status(400).json({ error: 'Faculty ID is required' });
+
+  try {
+      const faculty = await updateFaculty(id, { name, phone });
+      console.log(faculty);
+      res.status(200).json(FormatFaculty(faculty));
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+}
+
+export const DeleteFaculty = async (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ error: 'Faculty ID is required' });
+  try {
+    await deleteFaculty(id);
+    res.status(200).json({ message: 'Facultad eliminada exitosamente' });
+  } catch (error) {
+    if (error.message.includes('asociada con órdenes existentes')) {
+      return res.status(400).json({ error: error.message });
+    }
+    console.error('Error deleting faculty:', error);
+    res.status(500).json({ error: 'Error al eliminar la facultad' });
   }
 };

@@ -2,15 +2,15 @@ export const FormatFaculty = (faculty) => {
     return {
         id: faculty.idfaculty,
         name: faculty.name,
-        lastName: faculty.phone,
-        emails: {
+        phone: faculty.phone,
+        facultyEmail: {
             id: faculty.facultyEmail.idEmail,
             email: faculty.facultyEmail.email
         },
         inchargeperson: {
             id: faculty.person.idperson,
-            name: faculty.person.name,
-            lastName: faculty.person.lastname,
+            firstname: faculty.person.name,
+            lastname: faculty.person.lastname,
             phone: faculty.person.cellphone,
             email: faculty.person.email
         }
