@@ -63,6 +63,31 @@ export const notasCreditoAnioService = async () => {
     return total;
   };
 
+  export const notasPorAnioService = async () => {
+    const currentYear = new Date().getFullYear();
+    const years = [currentYear - 2, currentYear - 1, currentYear];
+  
+    const results = await Promise.all(
+      years.map(async (year) => {
+        const notas = await prisma.creditNote.findMany({
+          where: {
+            initialBill: {
+              billdate: {
+                gte: startOfYear(new Date(year, 0)),
+                lte: endOfYear(new Date(year, 11)),
+              },
+            },
+          },
+        });
+  
+        const total = notas.reduce((sum, nota) => sum + nota.amount, 0);
+        return { year, total };
+      })
+    );
+  
+    return results;
+  };
+
   export const facultadesTopService = async () => {
     const topFacultades = await prisma.order.groupBy({
       by: ['faculty'],
