@@ -113,4 +113,47 @@ export const notasCreditoAnioService = async () => {
       name: nombres.find(n => n.idfaculty === f.faculty)?.name || 'Desconocida'
     }));
   };
+
+  export const carteraPagadaAnioService = async () => {
+    const { _sum } = await prisma.order.aggregate({
+      _sum: { debtamount: true },
+      where: {
+        state: 3, // Pagado
+        creationdate: {
+          gte: startOfYear(new Date()),
+          lte: endOfYear(new Date()),
+        },
+      },
+    });
+  
+    return _sum.debtamount ?? 0;
+  };
+
+  export const carteraPagadaUltimosAniosService = async () => {
+    const currentYear = new Date().getFullYear();
+  
+    const years = [currentYear - 2, currentYear - 1, currentYear];
+  
+    const resultados = await Promise.all(
+      years.map(async (year) => {
+        const { _sum } = await prisma.order.aggregate({
+          _sum: { debtamount: true },
+          where: {
+            state: 3, // Pagado
+            creationdate: {
+              gte: new Date(`${year}-01-01T00:00:00Z`),
+              lte: new Date(`${year}-12-31T23:59:59Z`),
+            },
+          },
+        });
+  
+        return {
+          year,
+          total: _sum.debtamount ?? 0,
+        };
+      })
+    );
+  
+    return resultados;
+  };
   
