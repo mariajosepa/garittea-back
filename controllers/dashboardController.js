@@ -5,7 +5,9 @@ import {
     ventasPorMesService,
     notasPorAnioService,
     carteraPagadaAnioService,
-    carteraPagadaUltimosAniosService
+    carteraPagadaUltimosAniosService,
+    carteraMorosaAnioService,
+    carteraMorosaUltimosAniosService
   } from '../services/dashboardService.js';
   
   export const getVentasCreditoMes = async (req, res) => {
@@ -58,7 +60,6 @@ import {
   export const getCarteraPagadaAnio = async (req, res) => {
     try {
       const total = await carteraPagadaAnioService();
-      console.log(total)
       res.json({ total });
     } catch (err) {
       res.status(500).json({ error: 'Error al obtener cartera pagada del año' });
@@ -72,5 +73,24 @@ import {
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Error al obtener cartera pagada de años anteriores' });
+    }
+  };
+
+  export const getCarteraMorosaAnio = async (req, res) => {
+    try {
+      const total = await carteraMorosaAnioService();
+      res.json({ total });
+    } catch (err) {
+      res.status(500).json({ error: 'Error al obtener la cartera morosa del año' });
+    }
+  };
+
+  export const getCarteraMorosaUltimosAnios = async (req, res) => {
+    try {
+      const data = await carteraMorosaUltimosAniosService();
+      res.json({ data });
+    } catch (err) {
+      console.error('Error al obtener cartera morosa por años:', err);
+      res.status(500).json({ error: 'Error al obtener cartera morosa por años' });
     }
   };
