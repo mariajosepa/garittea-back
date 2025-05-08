@@ -28,7 +28,6 @@ import {
   export const getNotasCreditoAnio = async (req, res) => {
     try {
       const total = await notasCreditoAnioService();
-      console.log(total)
       res.json({ total });
     } catch (err) {
       res.status(500).json({ error: 'Error al obtener notas de crédito del año' });
