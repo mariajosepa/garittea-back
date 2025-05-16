@@ -19,10 +19,7 @@ const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [];
 const app = express();
 
 app.use(cors({
-  origin: [
-    'http://localhost:3039',
-    'https://garittea-front.vercel.app'
-  ],
+  origin:allowedOrigins, 
   credentials: true,
 }));
 
