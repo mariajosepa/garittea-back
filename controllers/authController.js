@@ -1,6 +1,7 @@
 import { authenticateUser, generateToken } from '../services/authService.js';
 
 export const login = async (req, res) => {
+  console.log('🔐 Login endpoint hit');
   try {
     const { email, password } = req.body;
     const user = await authenticateUser(email, password);
