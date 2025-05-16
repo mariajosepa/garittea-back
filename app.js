@@ -14,6 +14,8 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 
 
 const PORT = process.env.PORT || 3000;
+const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [];
+
 const app = express();
 
 app.use(cors({
