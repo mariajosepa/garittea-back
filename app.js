@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [];
 
 const app = express();
+app.use(cookieParser());   
 
 app.use(cors({
   origin:allowedOrigins, 
@@ -24,9 +25,9 @@ app.use(cors({
 }));
 
 
-//define the routes
+//define the route
 app.use(express.json());
-app.use(cookieParser());    
+ 
 
 app.use('/auth', authRoutes);
 app.use('/users', authenticateJWT, userRoutes);
