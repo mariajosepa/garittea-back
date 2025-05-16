@@ -17,9 +17,13 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:3039',
-  credentials: true, 
+  origin: [
+    'http://localhost:3039',
+    'https://garittea-front.vercel.app'
+  ],
+  credentials: true,
 }));
+
 
 //define the routes
 app.use(express.json());
