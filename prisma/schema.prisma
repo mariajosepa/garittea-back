@@ -7,10 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-}
-
 model order {
   idOrder         Int       @id @default(autoincrement())
   creationdate    DateTime  @default(now())
