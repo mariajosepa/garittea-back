@@ -15,11 +15,11 @@ export const GetAllCreditNotes = async (req, res) => {
 
 export const CreateNoteCredit = async (req, res) => {
   try {
-    const { initialBillId, finalBillId, amount, reason } = req.body;
-    if (!initialBillId || !finalBillId || !amount || !reason) {
+    const { initialBillId, finalBillId, idcreditNote, amount, reason } = req.body;
+    if (!initialBillId || !idcreditNote || !amount || !reason) {
       return res.status(400).json({ error: 'Campos obligatorios faltantes' });
     }
-    const created = await createNoteCredit({ initialBillId, finalBillId, amount, reason });
+    const created = await createNoteCredit({ initialBillId, finalBillId, idcreditNote, amount, reason });
     res.status(201).json(created);
   } catch (error) {
     res.status(500).json({ error: error.message });

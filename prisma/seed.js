@@ -4,18 +4,12 @@ import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-const NUM_USERS = 10;
-const NUM_PEOPLE = 20;
-const NUM_FACULTIES = 5;
-const NUM_ORDERS = 50;
-const NUM_CREDIT_NOTES = 10;
-
 async function main() {
-  console.log(`🌱 Start seeding ...`);
+  console.log('🌱 Seeding database...');
 
-  // 1. Admin user
   const adminPasswordHash = await bcrypt.hash('admin123', 10);
-  const admin = await prisma.users.create({
+
+  const user = await prisma.users.create({
     data: {
       firstname: 'Admin',
       lastname: 'User',
@@ -24,130 +18,93 @@ async function main() {
     },
   });
 
-  const createdUsers = [admin];
-
-  // 2. Random users
-  for (let i = 0; i < NUM_USERS; i++) {
-    const user = await prisma.users.create({
-      data: {
-        firstname: faker.person.firstName(),
-        lastname: faker.person.lastName(),
-        email: faker.internet.email(),
-        password: await bcrypt.hash(faker.internet.password(), 10),
-      },
-    });
-    createdUsers.push(user);
-  }
-
-  // 3. People
-  const createdPeople = [];
-  for (let i = 0; i < NUM_PEOPLE; i++) {
-    const firstName = faker.person.firstName();
-    const lastName = faker.person.lastName();
-    const person = await prisma.person.create({
-      data: {
-        name: firstName,
-        lastname: lastName,
-        cellphone: faker.phone.number(),
-        email: {
-          create: {
-            email: faker.internet.email({ firstName, lastName }),
-          },
+  const person1 = await prisma.person.create({
+    data: {
+      name: 'Laura',
+      lastname: 'Ramírez',
+      cellphone: faker.phone.number(),
+      email: {
+        create: {
+          email: faker.internet.email(),
         },
       },
-    });
-    createdPeople.push(person);
-  }
+    },
+  });
 
-  // 4. Faculties
-  const createdFaculties = [];
-  for (let i = 0; i < NUM_FACULTIES; i++) {
-    const maybeIncharge = faker.helpers.arrayElement([null, ...createdPeople]);
-    const faculty = await prisma.faculty.create({
-      data: {
-        name: faker.company.name() + ' Faculty',
-        phone: faker.phone.number(),
-        associatedemails: faker.internet.email(),
-        facultyEmail: {
-          create: {
-            email: faker.internet.email(),
-          },
+  const person2 = await prisma.person.create({
+    data: {
+      name: 'Juan',
+      lastname: 'González',
+      cellphone: faker.phone.number(),
+      email: {
+        create: {
+          email: faker.internet.email(),
         },
-        ...(maybeIncharge && {
-          person: {
-            connect: { idperson: maybeIncharge.idperson },
-          },
-        }),
+      },
+    },
+  });
+
+  const faculty = await prisma.faculty.create({
+    data: {
+      name: 'Facultad de Ingeniería',
+      phone: faker.phone.number(),
+      associatedemails: faker.internet.email(),
+      facultyEmail: {
+        create: {
+          email: faker.internet.email(),
+        },
+      },
+      person: { connect: { idperson: person1.idperson } },
+    },
+  });
+
+  const orders = [];
+  for (let i = 0; i < 10; i++) {
+    const order = await prisma.order.create({
+      data: {
+        user: user.idusers,
+        applicantperson: person1.idperson,
+        managingperson: person2.idperson,
+        debtamount: faker.number.int({ min: 1000, max: 10000 }),
+        faculty: faculty.idfaculty,
       },
     });
-    createdFaculties.push(faculty);
+    orders.push(order);
   }
 
-  // 5. Orders + Bills
-  const createdBills = [];
-  for (let i = 0; i < NUM_ORDERS; i++) {
-    const randomUser = faker.helpers.arrayElement(createdUsers);
-    const randomApplicant = faker.helpers.arrayElement(createdPeople);
-    const randomManager = faker.helpers.arrayElement(
-      createdPeople.filter(p => p.idperson !== randomApplicant.idperson)
-    );
-    const randomFaculty = faker.helpers.arrayElement(createdFaculties);
+  let nextIdbill = 1000;
+  const bills = [];
 
-    try {
-      const order = await prisma.order.create({
-        data: {
-          user: randomUser.idusers,
-          applicantperson: randomApplicant.idperson,
-          managingperson: randomManager.idperson,
-          debtamount: faker.number.int({ min: 1000, max: 50000 }),
-          faculty: randomFaculty.idfaculty,
-        },
-      });
-
-      const bill = await prisma.bill.create({
-        data: {
-          orderId: order.idOrder,
-        },
-      });
-
-      createdBills.push(bill);
-    } catch (err) {
-      console.error(`❌ Error creating order #${i + 1}:`, err.message);
-    }
+  for (const order of orders) {
+    const bill = await prisma.bill.create({
+      data: {
+        idbill: nextIdbill++,
+        orderId: order.idOrder,
+      },
+    });
+    bills.push(bill);
   }
 
-  // 6. Credit Notes (usando bills creadas)
-  let createdNotes = 0;
-  for (let i = 0; i < NUM_CREDIT_NOTES; i++) {
-    if (createdBills.length < 2) break;
-
-    const initialBill = faker.helpers.arrayElement(createdBills);
-    const finalBill = faker.helpers.arrayElement(
-      createdBills.filter(b => b.idbill !== initialBill.idbill)
-    );
-
-    try {
-      await prisma.creditNote.create({
-        data: {
-          amount: faker.number.int({ min: 100, max: 3000 }),
-          reason: faker.lorem.sentence(3),
-          initialBillId: initialBill.idbill,
-          finalBillId: finalBill.idbill,
-        },
-      });
-      createdNotes++;
-    } catch (err) {
-      console.error(`❌ Error creating creditNote #${i + 1}:`, err.message);
-    }
+  let nextIdcreditNote = 5000;
+  for (let i = 0; i < 5; i++) {
+    await prisma.creditNote.create({
+      data: {
+        idcreditNote: nextIdcreditNote++,
+        initialBillId: bills[i].idbill,
+        amount: faker.number.int({ min: 1000, max: 5000 }),
+        reason: faker.lorem.sentence(3),
+        state: 'activa',
+        finalBillId: null,
+      },
+    });
   }
 
-  console.log(`✅ ${createdBills.length} orders with bills created.`);
-  console.log(`✅ ${createdNotes} credit notes created.`);
+  console.log('✅ Seed complete.');
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Error during seeding:', e);
+  .catch(e => {
+    console.error('❌ Error seeding:', e);
     process.exit(1);
   })
   .finally(async () => {

@@ -30,8 +30,8 @@ export const updateBillState = async (req, res) => {
   const { id } = req.params;
   const { state } = req.body;
 
-  if (!state || !['activo', 'cancelado'].includes(state)) {
-    return res.status(400).json({ error: 'El estado debe ser "activo" o "cancelado".' });
+  if (!state || !['activo', 'nota', 'anulado'].includes(state)) {
+    return res.status(400).json({ error: 'El estado debe ser "activo", "nota", "anulado' });
   }
 
   try {

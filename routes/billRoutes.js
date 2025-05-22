@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/dispatch', dispatchOrder); // Crear bill
 router.patch('/:id/update-status', updateBillState); // Actualizar estado de bill
-router.post('/associated-notes', getAssociatedNotes);
+router.post('/associated-notes', getAssociatedNotes); //obtener las facturas que tienen una nota crédito asociada
 
 
 export default router;

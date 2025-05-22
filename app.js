@@ -27,7 +27,11 @@ app.use(cors({
 
 //define the route
 app.use(express.json());
- 
+
+app.use((req, res, next) => {
+  console.log(`🛰️  ${req.method} ${req.url}`);
+  next();
+});
 
 app.use('/auth', authRoutes);
 app.use('/users', authenticateJWT, userRoutes);

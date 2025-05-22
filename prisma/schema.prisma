@@ -1,7 +1,8 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./node_modules/@prisma/client"
+  output   = "./../node_modules/.prisma/client"
 }
+
 
 datasource db {
   provider = "postgresql"
@@ -17,7 +18,7 @@ model order {
   debtamount      Int
   state           Int       @default(1)
   faculty         Int
-  bill            bill?     @relation("OrderToBill")
+  bill            bill[]     @relation("OrderToBill")
   applicant       person    @relation("OrderApplicant", fields: [applicantperson], references: [idperson])
   manager         person    @relation("OrderManager", fields: [managingperson], references: [idperson])
   facultyRel      faculty   @relation("OrderFaculty", fields: [faculty], references: [idfaculty])
@@ -30,26 +31,34 @@ model order {
 }
 
 model bill {
-  idbill     Int       @id @default(autoincrement())
-  billdate   DateTime  @default(now()) 
-  orderId    Int       @unique
+  id         Int       @id @default(autoincrement())
+  idbill     Int       @unique  
+  billdate   DateTime  @default(now())
+  orderId    Int
   order      order     @relation("OrderToBill", fields: [orderId], references: [idOrder])
   state      String    @default("activo")
 
   initialNotes creditNote[] @relation("InitialBillRelation")
   finalNotes   creditNote[] @relation("FinalBillRelation")
+
+  @@index([idbill]) // No es único, pero se puede buscar eficientemente
 }
 
+
 model creditNote {
-  idcreditNote   Int   @id @default(autoincrement())
+  id             Int   @id @default(autoincrement()) // 🔑 Primary key real
+  idcreditNote   Int   @unique                      // 🔒 Identificador externo/consecutivo
+
+  state         String @default("activa") // activa | anulada
   amount         Int
   reason         String
   initialBillId  Int
-  finalBillId    Int
+  finalBillId    Int?
 
   initialBill    bill @relation("InitialBillRelation", fields: [initialBillId], references: [idbill])
   finalBill      bill? @relation("FinalBillRelation", fields: [finalBillId], references: [idbill])
 }
+
 
 model faculty {
   idfaculty    Int      @id @default(autoincrement())
