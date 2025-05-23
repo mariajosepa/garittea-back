@@ -167,6 +167,7 @@ export const postOrder = async (orderData) => {
       manager: { connect: { idperson: managingPersonId } },
       facultyRel: { connect: { idfaculty: facultyId } },
       debtamount: debtAmount,
+      state:4,
     },
     include: {
       users: true,
