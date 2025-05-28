@@ -8,6 +8,7 @@ import {
   DeleteOrder,
   GetOrdersByFacultyAndState,
   UpdateOrder,
+  CheckOrderHasBill
 } from '../controllers/orderController.js';
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.get('/', GetAllOrders);
 router.get('/dates', GetOrdersByDates);
 router.get('/faculty', GetOrdersByFacultyAndState);
 router.get('/managingPerson', GetOrdersByIdManagingPerson);
+router.get('/:id/check-bill', CheckOrderHasBill);
 router.get('/:id', GetOrderById);
 router.delete('/:id', DeleteOrder);
 router.patch('/:id', UpdateOrder);

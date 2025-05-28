@@ -23,5 +23,11 @@ export const formatOrder = (order) => {
     },
     debtAmount: order.debtamount,
     state: order.state,
+    bills: order.bill ? order.bill.map(bill => ({
+      id: bill.id,
+      idBill: bill.idbill,
+      billdate: bill.billdate,
+      sate: bill.sate
+    })) : []
   }
 }

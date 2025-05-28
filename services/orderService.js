@@ -9,6 +9,7 @@ export const getAllOrders = async () => {
       applicant: true,
       manager: true,
       facultyRel: true,
+      bill: true
     },
   });
 };
@@ -34,6 +35,7 @@ export const getOrdersByDates = async (startDate, endDate) => {
       applicant: true,
       manager: true,
       facultyRel: true,
+      bill: true
     },
   });
 };
@@ -47,6 +49,7 @@ export const getOrderById = async (id) => {
       applicant: true,
       manager: true,
       facultyRel: true,
+      bill: true
     },
   });
 };
@@ -78,48 +81,100 @@ export const deleteOrderById = async (id) => {
 };
 
 // Update order by id
-export const updateOrderById = async (id, data) => {
-  const numericId = Number(id);
+export const updateOrderById = async (id, { managingPersonId, debtAmount, state, bills }) => {
 
   const order = await prisma.order.findUnique({
-    where: { idOrder: numericId },
-    include: {
-      bill: true,
-    },
+    where: { idOrder: Number(id) },
+    include: { bill: true }
   });
 
   if (!order) {
-    throw new Error('Pedido no encontrado.');
+    throw new Error('ORDER_NOT_FOUND');
   }
 
-  const updateData = {};
 
-  if (data.managingPersonId) {
-    updateData.manager = {
-      connect: { idperson: data.managingPersonId },
-    };
+  if (state === 3 && (!order.bill || order.bill.length === 0) && !bills) {
+    throw new Error('NO_BILL_FOR_PAID_STATE');
   }
 
-  if (data.debtAmount !== undefined) {
-    updateData.debtamount = data.debtAmount;
+  
+  if (bills && bills.length > 0) {
+    await processBillForOrder(id, bills[0], debtAmount || order.debtamount);
   }
 
-  if (data.state !== undefined) {
-    updateData.state = data.state;
+  let finalState = state;
+  if (bills && bills.length > 0 && bills[0].idBill) {
+    if (order.state === 4) { 
+      finalState = 1; 
+      console.log(`Estado cambiado automáticamente de 4 (Generado) a 1 (Pendiente) para la orden ${id} al asociar factura`);
+    }
   }
+
 
   const updatedOrder = await prisma.order.update({
-    where: { idOrder: numericId },
-    data: updateData,
-    include: {
-      users: true,
-      applicant: true,
-      manager: true,
-      facultyRel: true,
+  where: { idOrder: Number(id) },
+  data: {
+    managingPerson: managingPersonId ? { connect: { idperson: Number(managingPersonId) } } : undefined,
+    debtamount: debtAmount !== undefined ? debtAmount : undefined,
+    state: finalState !== undefined ? finalState : undefined,
     },
+    include: {
+      users: true,        
+      applicant: true,    
+      manager: true,      
+      facultyRel: true,   
+      bill: true          
+    }
   });
 
   return updatedOrder;
+};
+
+async function processBillForOrder(orderId, billData, amount) {
+  if (billData.idBill) {
+    const existingBill = await prisma.bill.findFirst({
+      where: { idbill: Number(billData.idBill) },
+      include: { order: true }
+    });
+
+    if (existingBill && existingBill.orderId && existingBill.orderId !== Number(orderId)) {
+      throw new Error(`BILL_ALREADY_ASSOCIATED: Esta factura ya está asociada a otro crédito (ID: ${existingBill.orderId})`);
+    }
+
+    if (existingBill) {
+      await prisma.bill.update({
+        where: { id: existingBill.id },
+        data: {
+          billdate: new Date(billData.billdate),
+          state: billData.state || "active",
+          order: { connect: { idOrder: Number(orderId) } }
+        }
+      });
+    } else {
+      await prisma.bill.create({
+        data: {
+          idbill: Number(billData.idBill),
+          billdate: new Date(billData.billdate),
+          state: billData.state || "active",
+          order: { connect: { idOrder: Number(orderId) } }
+        }
+      });
+    }
+  }
+}
+
+// Nueva función para verificar si un crédito tiene facturas
+export const checkOrderHasBill = async (id) => {
+  const order = await prisma.order.findUnique({
+    where: { idOrder: Number(id) },
+    include: { bill: true }
+  });
+  
+  if (!order) {
+    throw new Error('ORDER_NOT_FOUND');
+  }
+  
+  return { hasBill: order.bill && order.bill.length > 0 };
 };
 
 // Get orders by managing person
@@ -137,6 +192,7 @@ export const getOrdersByIdManagingPerson = async (id) => {
       applicant: true,
       manager: true,
       facultyRel: true,
+      bill: true
     },
   });
 };
@@ -174,6 +230,7 @@ export const postOrder = async (orderData) => {
       applicant: true,
       manager: true,
       facultyRel: true,
+      bill: true
     },
   });
 };
@@ -197,6 +254,7 @@ export const getOrdersByFacultyAndState = async (facultyId, state) => {
       applicant: true,
       manager: true,
       facultyRel: true,
+      bill: true
     },
   });
 };
