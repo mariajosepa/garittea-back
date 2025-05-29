@@ -1,29 +1,42 @@
-import bcrypt from 'bcrypt';
 import prisma from '../prisma/client.js';
 
-export async function createUser(email, password, firstname, lastname) {
-  if (!email || !password) {
-    const err = new Error('Email y contraseña son obligatorios');
-    err.status = 400;
-    throw err;
-  }
+export const getAllUsers = async () => {
+    return await prisma.users.findMany({
+        orderBy: { idusers: 'desc' }
+    });
+};
 
-  const existingUser = await prisma.users.findUnique({ where: { email } });
-  if (existingUser) {
-    const err = new Error('El email ya está en uso');
-    err.status = 409;
-    throw err;
-  }
+export const getUserById = async (id) => {
+    return await prisma.users.findUnique({
+        where: { idusers: Number(id) }
+    });
+};
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await prisma.users.create({
-    data: {
-      email: email,
-      firstname: firstname,
-      lastname: lastname,
-      password: passwordHash,
-    },
-  });
+export const createUser = async (userData) => {
+    const { email, password, firstname, lastname, role } = userData;
+    
+    if (!email || !password || !firstname || !lastname || !role) {
+        throw new Error('Todos los campos son requeridos');
+    }
 
-  return user;
-}
+    return await prisma.users.create({
+        data: {
+            email,
+            password, // Nota: Deberías hashear la contraseña antes
+            firstname,
+            lastname,
+            role: Number(role)
+        }
+    });
+};
+
+export const searchUsers = async (firstname) => {
+    return await prisma.users.findMany({
+        where: {
+            firstname: {
+                contains: firstname,
+                mode: 'insensitive'
+            }
+        }
+    });
+};

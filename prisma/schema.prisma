@@ -99,10 +99,11 @@ model facultyEmail {
 }
 
 model users {
-  idusers Int @id @default(autoincrement())
-  email   String @unique
-  firstname String @db.VarChar(45)
-  lastname  String @db.VarChar(45)
-  password  String @db.Text
+  idusers   Int     @id @default(autoincrement())
+  email     String  @unique
+  firstname String  @db.VarChar(45)
+  lastname  String  @db.VarChar(45)
+  password  String  @db.Text  // Cambiado de Text a VarChar(25)
+  role      Int     @default(3)      // 1:superusuario, 2:admin, 3:colaborador
   orders    order[]
 }

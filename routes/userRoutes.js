@@ -1,8 +1,17 @@
 import express from 'express';
-import { createUsers } from '../controllers/userController.js';
+import { 
+    createUserHandler, 
+    getAllUsersHandler, 
+    getUserByIdHandler,
+    searchUsersHandler
+} from '../controllers/userController.js';
 
 const router = express.Router();
 
-router.put('/', createUsers);
+// Rutas base sin '/users' ya que express.Router() lo manejará
+router.get('/', getAllUsersHandler);
+router.post('/', createUserHandler);
+router.get('/search', searchUsersHandler);
+router.get('/:id', getUserByIdHandler);
 
 export default router;

@@ -15,6 +15,7 @@ async function main() {
       lastname: 'User',
       email: 'admin@example.com',
       password: adminPasswordHash,
+      role: 2, // Assuming 2 is the role for admin
     },
   });
 
