@@ -59,13 +59,23 @@ export const CreateFaculty = async (req, res) => {
 
 export const UpdateFaculty = async (req, res) => {
   const { id } = req.params;
-  const { name, phone } = req.body;
+  const { name, phone, facultyEmail, inchargeperson, associatedemails = '' } = req.body;
+  
   if (!id) return res.status(400).json({ error: 'Faculty ID is required' });
+  if (!name) return res.status(400).json({ error: 'El nombre de la facultad es requerido' });
 
   try {
-      const faculty = await updateFaculty(id, { name, phone });
-      console.log(faculty);
-      res.status(200).json(FormatFaculty(faculty));
+    const facultyData = {
+      name,
+      phone,
+      associatedemails,
+      ...(inchargeperson && { inchargeperson: { id: inchargeperson.id } }),
+      ...(facultyEmail && { facultyEmail: { email: facultyEmail.email } })
+    };
+
+    const faculty = await updateFaculty(id, facultyData);
+    console.log('Updated faculty:', faculty);
+    res.status(200).json(FormatFaculty(faculty));
   } catch (error) {
       res.status(500).json({ error: error.message });
   }
