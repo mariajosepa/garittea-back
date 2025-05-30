@@ -143,3 +143,30 @@ export const deleteFaculty = async (id) => {
     throw error;
   }
 };
+
+// Añadir esta función después de getAllFaculties
+
+export const getFacultyById = async (id) => {
+  try {
+    const numericId = Number(id);
+    
+    const faculty = await prisma.faculty.findUnique({
+      where: { 
+        idfaculty: numericId 
+      },
+      include: {
+        person: true,
+        facultyEmail: true
+      }
+    });
+    
+    if (!faculty) {
+      throw new Error(`Faculty with ID ${id} not found`);
+    }
+    
+    return faculty;
+  } catch (error) {
+    console.error(`Error fetching faculty with ID ${id}:`, error);
+    throw error;
+  }
+};

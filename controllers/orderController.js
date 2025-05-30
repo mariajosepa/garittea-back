@@ -103,8 +103,10 @@ export const CheckOrderHasBill = async (req, res) => {
 };
 
 export const PostOrder = async (req, res) => {
-  const { userId, applicantId, managingPersonId, facultyId, debtAmount } = req.body;
+  const { applicantId, managingPersonId, facultyId, debtAmount } = req.body;
   try {
+    const userId = req.userId;
+    console.log(userId);
     const order = await postOrder({ userId, applicantId, managingPersonId, facultyId, debtAmount });
     res.status(201).json(formatOrder(order));
   } catch (error) {

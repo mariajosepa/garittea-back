@@ -1,5 +1,5 @@
 import { FormatFaculty } from "../formatters/facultyFormatter.js";
-import { getAllFaculties, getFacultyIdByName, createFaculty, updateFaculty, deleteFaculty } from "../services/facultyService.js";
+import { getAllFaculties, getFacultyById, getFacultyIdByName, createFaculty, updateFaculty, deleteFaculty } from "../services/facultyService.js";
 
 export const GetAllFaculties = async (req, res) => {
     try {
@@ -10,6 +10,16 @@ export const GetAllFaculties = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+export const GetFacultyById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const faculty = await getFacultyById(id);
+    res.json(FormatFaculty(faculty));
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
 
 export const GetFacultyIdByName = async (req, res) => {
   const { name } = req.query;
