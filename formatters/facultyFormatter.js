@@ -3,16 +3,20 @@ export const FormatFaculty = (faculty) => {
         id: faculty.idfaculty,
         name: faculty.name,
         phone: faculty.phone,
-        facultyEmail: {
-            id: faculty.facultyEmail.idEmail,
-            email: faculty.facultyEmail.email
-        },
-        inchargeperson: {
-            id: faculty.person.idperson,
-            firstname: faculty.person.name,
-            lastname: faculty.person.lastname,
-            phone: faculty.person.cellphone,
-            email: faculty.person.email
-        }
+        facultyEmail: faculty.facultyEmail
+            ? {
+                id: faculty.facultyEmail.idEmail,
+                email: faculty.facultyEmail.email
+            }
+            : null,
+        inchargeperson: faculty.person
+            ? {
+                id: faculty.person.idperson,
+                firstname: faculty.person.name,
+                lastname: faculty.person.lastname,
+                phone: faculty.person.cellphone,
+                email: faculty.person.email
+            }
+            : null
     }
 }
