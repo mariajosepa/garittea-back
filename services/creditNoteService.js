@@ -10,14 +10,13 @@ export const getAllCreditNotes = async () => {
       },
     });
   } catch (error) {
-    console.error('❌ Error fetching credit notes:', error);
+    console.error('Error fetching credit notes:', error);
     throw new Error('Error fetching credit notes');
   }
 };
 
 export const createNoteCredit = async ({ initialBillId, finalBillId, idcreditNote, amount, reason }) => {
   try {
-    console.log(initialBillId, finalBillId, idcreditNote, amount, reason);
 
     const initialBill = await prisma.bill.findUnique({
       where: { idbill: initialBillId },

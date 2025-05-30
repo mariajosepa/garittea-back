@@ -11,7 +11,6 @@ export const createBill = async ({ idbill, orderId, billDate = new Date() }) => 
   });
 };
 
-
 export const createBillForOrder = async (orderId, idbill) => {
   return await prisma.bill.create({
     data: {
@@ -22,7 +21,6 @@ export const createBillForOrder = async (orderId, idbill) => {
     }
   });
 };
-
 
 export const updateBillStateById = async (idbill, newState) => {
   return await prisma.bill.updateMany({
@@ -36,24 +34,37 @@ export const findAssociatedNotes = async (consecutivos) => {
     .map(c => parseInt(c.replace(/\D/g, ''), 10))
     .filter(Boolean);
 
-  const notes = await prisma.creditNote.findMany({
+  const bills = await prisma.bill.findMany({
     where: {
-      initialBill: {
-        idbill: { in: parsedIds },
-      },
+      idbill: { in: parsedIds }
     },
     include: {
-      initialBill: true,
-      finalBill: true,
-    },
+      initialNotes: {
+        include: {
+          finalBill: true
+        }
+      }
+    }
   });
 
-  return notes.map(note => ({
-    idNote: note.idcreditNote,
-    idInitialBill: note.initialBill?.idbill ?? null,
-    idFinalBill: note.finalBill?.idbill ?? null,
-    reason: note.reason,
-    amount: note.amount,
-  }));
+  const result = bills.map(bill => {
+    const latestNote = bill.initialNotes.length > 0
+      ? bill.initialNotes[bill.initialNotes.length - 1]
+      : null;
+
+    return {
+      idbill: bill.idbill,
+      stateBill: bill.state,
+      hasNote: latestNote ? 'sí' : 'no',
+      idNote: latestNote?.idcreditNote ?? null,
+      amountNote: latestNote?.amount ?? null,
+      reasonNote: latestNote?.reason ?? null,
+      wasReplaced: latestNote?.finalBill? 'sí' : 'no',
+      replacedBy: latestNote?.finalBill?.idbill ?? null
+    };
+  });
+
+  return result;
 };
+
 
