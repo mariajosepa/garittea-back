@@ -3,7 +3,9 @@ import {
     createUserHandler, 
     getAllUsersHandler, 
     getUserByIdHandler,
-    searchUsersHandler
+    searchUsersHandler,
+    updateUserHandler,
+    deleteUserHandler
 } from '../controllers/userController.js';
 
 const router = express.Router();
@@ -13,5 +15,7 @@ router.get('/', getAllUsersHandler);
 router.post('/', createUserHandler);
 router.get('/search', searchUsersHandler);
 router.get('/:id', getUserByIdHandler);
+router.put('/:id', updateUserHandler);
+router.delete('/:id', deleteUserHandler);
 
 export default router;
