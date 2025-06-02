@@ -46,33 +46,72 @@ export const GetOrderById = async (req, res) => {
 export const DeleteOrder = async (req, res) => {
   const { id } = req.params;
   try {
-    await deleteOrderById(id);
-    res.status(200).json({ message: 'Pedido eliminado correctamente', deletedId: Number(id) });
+    const result = await deleteOrderById(id);
+    res.status(200).json({ 
+      message: 'Pedido eliminado correctamente', 
+      deletedId: Number(id) 
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    if (error.message === 'ORDER_NOT_FOUND') {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+    if (error.message === 'ORDER_HAS_BILL') {
+      return res.status(400).json({ error: 'No se puede eliminar un pedido que tiene factura asociada' });
+    }
+    if (error.message === 'INVALID_ID_FORMAT') {
+      return res.status(400).json({ error: 'Formato de ID inválido' });
+    }
+    res.status(500).json({ error: 'Error al eliminar el pedido' });
   }
 };
 
 export const UpdateOrder = async (req, res) => {
   const { id } = req.params;
-  const { managingPersonId, debtAmount, state, bills } = req.body;
+  const { managingPersonId, debtAmount, state, bills, observaciones } = req.body; // Agregado observaciones
 
   try {
-    // El controlador solo recibe datos y llama al servicio
-    const updated = await updateOrderById(id, { managingPersonId, debtAmount, state, bills });
+    const updated = await updateOrderById(id, { 
+      managingPersonId, 
+      debtAmount, 
+      state, 
+      bills,
+      observaciones // Agregado observaciones
+    });
     res.status(200).json(formatOrder(updated));
   } catch (error) {
-    // Mejorar manejo de errores específicos
     if (error.message === 'ORDER_NOT_FOUND') {
       return res.status(404).json({ error: 'Orden no encontrada' });
     }
     if (error.message === 'NO_BILL_FOR_PAID_STATE') {
       return res.status(400).json({ error: 'No se puede cambiar a Pagado sin una factura asociada' });
     }
+    if (error.message === 'ORDER_ALREADY_HAS_BILL') {
+      return res.status(400).json({ error: 'Esta orden ya tiene una factura asociada' });
+    }
     if (error.message.includes('BILL_ALREADY_ASSOCIATED')) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: 'Esta factura ya está asociada a otro crédito' });
     }
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const GetOrdersByApplicant = async (req, res) => {
+  try {
+    const { id } = req.query;
+    
+    if (!id) {
+      return res.status(400).json({ 
+        error: 'El ID del solicitante es requerido' 
+      });
+    }
+
+    const orders = await getOrdersByApplicant(id);
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error al obtener órdenes por solicitante:', error);
+    res.status(500).json({ 
+      error: 'Error al obtener las órdenes por solicitante' 
+    });
   }
 };
 
@@ -103,11 +142,17 @@ export const CheckOrderHasBill = async (req, res) => {
 };
 
 export const PostOrder = async (req, res) => {
-  const { applicantId, managingPersonId, facultyId, debtAmount } = req.body;
+  const { applicantId, managingPersonId, facultyId, debtAmount, observaciones } = req.body; // Agregado observaciones
   try {
     const userId = req.userId;
-    console.log(userId);
-    const order = await postOrder({ userId, applicantId, managingPersonId, facultyId, debtAmount });
+    const order = await postOrder({ 
+      userId, 
+      applicantId, 
+      managingPersonId, 
+      facultyId, 
+      debtAmount,
+      observaciones // Agregado observaciones
+    });
     res.status(201).json(formatOrder(order));
   } catch (error) {
     res.status(500).json({ error: error.message });

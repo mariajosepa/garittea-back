@@ -30,12 +30,14 @@ export const GetPersonIdByName = async (req, res) => {
 
 export const UpdatePerson = async (req, res) => {
   const { id } = req.params;
-  const data = req.body;
+  const numericId = Number(id);
 
-  if (!id) return res.status(400).json({ error: 'ID is required' });
+  if (!id || isNaN(numericId)) {
+    return res.status(400).json({ error: 'Se requiere un ID válido' });
+  }
 
   try {
-    const updatedPerson = await updatePerson(id, data);
+    const updatedPerson = await updatePerson(numericId, req.body);
     if (!updatedPerson) return res.status(404).json({ error: 'Person not found' });
     const formatted = formatPerson(updatedPerson);
     res.status(200).json(formatted);

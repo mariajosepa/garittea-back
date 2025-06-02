@@ -5,28 +5,29 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.log('🌱 Iniciando proceso de seeding...');
 
+  // Crear usuario administrador
   const adminPasswordHash = await bcrypt.hash('admin123', 10);
-
   const user = await prisma.users.create({
     data: {
       firstname: 'Admin',
       lastname: 'User',
       email: 'admin@example.com',
       password: adminPasswordHash,
-      role: 2, // Assuming 2 is the role for admin
+      role: 2,
     },
   });
 
+  // Crear personas con sus emails
   const person1 = await prisma.person.create({
     data: {
       name: 'Laura',
       lastname: 'Ramírez',
-      cellphone: faker.phone.number(),
+      cellphone: '3001234567',
       email: {
         create: {
-          email: faker.internet.email(),
+          email: 'laura.ramirez@example.com',
         },
       },
     },
@@ -36,76 +37,75 @@ async function main() {
     data: {
       name: 'Juan',
       lastname: 'González',
-      cellphone: faker.phone.number(),
+      cellphone: '3009876543',
       email: {
         create: {
-          email: faker.internet.email(),
+          email: 'juan.gonzalez@example.com',
         },
       },
     },
   });
 
+  // Crear facultad con email
   const faculty = await prisma.faculty.create({
     data: {
       name: 'Facultad de Ingeniería',
-      phone: faker.phone.number(),
-      associatedemails: faker.internet.email(),
+      phone: '6012345678',
+      associatedemails: 'ingenieria@example.com',
+      inchargeperson: person1.idperson,
       facultyEmail: {
         create: {
-          email: faker.internet.email(),
+          email: 'facultad.ingenieria@example.com',
         },
       },
-      person: { connect: { idperson: person1.idperson } },
     },
   });
 
-  const orders = [];
-  for (let i = 0; i < 10; i++) {
+  // Crear órdenes y facturas
+  for (let i = 0; i < 5; i++) {
+    // Crear orden
     const order = await prisma.order.create({
       data: {
         user: user.idusers,
         applicantperson: person1.idperson,
         managingperson: person2.idperson,
-        debtamount: faker.number.int({ min: 1000, max: 10000 }),
+        debtamount: faker.number.int({ min: 50000, max: 500000 }),
         faculty: faculty.idfaculty,
+        state: 1,
+        observaciones: faker.lorem.sentence(),
       },
     });
-    orders.push(order);
-  }
 
-  let nextIdbill = 1000;
-  const bills = [];
-
-  for (const order of orders) {
+    // Crear factura asociada a la orden
     const bill = await prisma.bill.create({
       data: {
-        idbill: nextIdbill++,
+        idbill: 1000 + i,
         orderId: order.idOrder,
+        state: 'activo',
       },
     });
-    bills.push(bill);
+
+    // Crear nota crédito para algunas facturas
+    if (i < 3) {
+      await prisma.creditNote.create({
+        data: {
+          idcreditNote: 5000 + i,
+          state: 'activa',
+          amount: faker.number.int({ min: 10000, max: 50000 }),
+          reason: faker.lorem.sentence(),
+          initialBillId: bill.idbill,
+          finalBillId: null,
+        },
+      });
+    }
   }
 
-  let nextIdcreditNote = 5000;
-  for (let i = 0; i < 5; i++) {
-    await prisma.creditNote.create({
-      data: {
-        idcreditNote: nextIdcreditNote++,
-        initialBillId: bills[i].idbill,
-        amount: faker.number.int({ min: 1000, max: 5000 }),
-        reason: faker.lorem.sentence(3),
-        state: 'activa',
-        finalBillId: null,
-      },
-    });
-  }
-
-  console.log('✅ Seed complete.');
+  console.log('✅ Seed completado exitosamente.');
 }
 
 main()
-  .catch(e => {
-    console.error('❌ Error seeding:', e);
+  .catch((e) => {
+    console.error('❌ Error durante el seeding:', e);
     process.exit(1);
   })
   .finally(async () => {

@@ -1,7 +1,7 @@
 export const formatPerson = (person) => {
     try {
       return {
-        id: person.idperson.toString(),
+        id: person.idperson, // Removemos el toString()
         firstname: person.name || '',
         lastname: person.lastname || '',
         cellphone: person.cellphone || '',
@@ -16,9 +16,8 @@ export const formatPerson = (person) => {
       };
     } catch (error) {
       console.error('Error formatting person:', error, person);
-      // Retornar un objeto básico para evitar errores en cascada
       return { 
-        id: person?.idperson?.toString() || '0',
+        id: person?.idperson || 0, // Cambiamos a número
         firstname: person?.name || '',
         lastname: person?.lastname || '',
         cellphone: '',

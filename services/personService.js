@@ -26,7 +26,7 @@ export const getPersonIdByName = async (name, lastname) => {
 
 export const updatePerson = async (id, data) => {
   // Extraer información de facultad si existe
-  const { faculty, id: personId, firstname, ...otherData } = data; // Eliminar 'id' de los datos
+  const numericId = Number(id);
 
   // Preparar objeto para la actualización
   const updateData = {
@@ -58,8 +58,8 @@ export const updatePerson = async (id, data) => {
     };
   }
 
-  return await prisma.person.update({
-    where: { idperson: Number(id) },
+return await prisma.person.update({
+    where: { idperson: numericId },
     data: updateData,
     include: {
       email: true,

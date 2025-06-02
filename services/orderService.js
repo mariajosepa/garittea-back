@@ -58,6 +58,10 @@ export const getOrderById = async (id) => {
 export const deleteOrderById = async (id) => {
   const numericId = Number(id);
 
+  if (isNaN(numericId)) {
+    throw new Error('INVALID_ID_FORMAT');
+  }
+
   const order = await prisma.order.findUnique({
     where: { idOrder: numericId },
     include: {
@@ -66,23 +70,25 @@ export const deleteOrderById = async (id) => {
   });
 
   if (!order) {
-    throw new Error('Pedido no encontrado');
+    throw new Error('ORDER_NOT_FOUND');
   }
 
   if (order.bill) {
-    throw new Error('No se puede eliminar un pedido que ya tiene una factura asociada.');
+    throw new Error('ORDER_HAS_BILL');
   }
 
   await prisma.order.delete({
     where: { idOrder: numericId },
   });
 
-  return { deletedId: numericId };
+  return { 
+    deletedId: numericId,
+    message: 'Orden eliminada exitosamente' 
+  };
 };
 
 // Update order by id
-export const updateOrderById = async (id, { managingPersonId, debtAmount, state, bills }) => {
-
+export const updateOrderById = async (id, { managingPersonId, debtAmount, state, bills, observaciones }) => {
   const order = await prisma.order.findUnique({
     where: { idOrder: Number(id) },
     include: { bill: true }
@@ -92,38 +98,36 @@ export const updateOrderById = async (id, { managingPersonId, debtAmount, state,
     throw new Error('ORDER_NOT_FOUND');
   }
 
-
-  if (state === 3 && (!order.bill || order.bill.length === 0) && !bills) {
+  if (state === 3 && !order.bill && !bills) {
     throw new Error('NO_BILL_FOR_PAID_STATE');
   }
 
-  
   if (bills && bills.length > 0) {
     await processBillForOrder(id, bills[0], debtAmount || order.debtamount);
   }
 
   let finalState = state;
   if (bills && bills.length > 0 && bills[0].idBill) {
-    if (order.state === 4) { 
-      finalState = 1; 
+    if (order.state === 4) {
+      finalState = 1;
       console.log(`Estado cambiado automáticamente de 4 (Generado) a 1 (Pendiente) para la orden ${id} al asociar factura`);
     }
   }
 
-
   const updatedOrder = await prisma.order.update({
-  where: { idOrder: Number(id) },
-  data: {
-    managingPerson: managingPersonId ? { connect: { idperson: Number(managingPersonId) } } : undefined,
-    debtamount: debtAmount !== undefined ? debtAmount : undefined,
-    state: finalState !== undefined ? finalState : undefined,
+    where: { idOrder: Number(id) },
+    data: {
+      managingperson: managingPersonId ? Number(managingPersonId) : undefined,
+      debtamount: debtAmount !== undefined ? debtAmount : undefined,
+      state: finalState !== undefined ? finalState : undefined,
+      observaciones: observaciones !== undefined ? observaciones : undefined,
     },
     include: {
-      users: true,        
-      applicant: true,    
-      manager: true,      
-      facultyRel: true,   
-      bill: true          
+      users: true,
+      applicant: true,
+      manager: true,
+      facultyRel: true,
+      bill: true
     }
   });
 
@@ -133,12 +137,21 @@ export const updateOrderById = async (id, { managingPersonId, debtAmount, state,
 async function processBillForOrder(orderId, billData, amount) {
   if (billData.idBill) {
     const existingBill = await prisma.bill.findFirst({
-      where: { idbill: Number(billData.idBill) },
-      include: { order: true }
+      where: { idbill: Number(billData.idBill) }
     });
 
     if (existingBill && existingBill.orderId && existingBill.orderId !== Number(orderId)) {
       throw new Error(`BILL_ALREADY_ASSOCIATED: Esta factura ya está asociada a otro crédito (ID: ${existingBill.orderId})`);
+    }
+
+    // Verificar si la orden ya tiene una factura
+    const orderWithBill = await prisma.order.findUnique({
+      where: { idOrder: Number(orderId) },
+      include: { bill: true }
+    });
+
+    if (orderWithBill.bill) {
+      throw new Error('ORDER_ALREADY_HAS_BILL: Esta orden ya tiene una factura asociada');
     }
 
     if (existingBill) {
@@ -146,8 +159,8 @@ async function processBillForOrder(orderId, billData, amount) {
         where: { id: existingBill.id },
         data: {
           billdate: new Date(billData.billdate),
-          state: billData.state || "active",
-          order: { connect: { idOrder: Number(orderId) } }
+          state: billData.state || "activo",
+          orderId: Number(orderId)
         }
       });
     } else {
@@ -155,8 +168,8 @@ async function processBillForOrder(orderId, billData, amount) {
         data: {
           idbill: Number(billData.idBill),
           billdate: new Date(billData.billdate),
-          state: billData.state || "active",
-          order: { connect: { idOrder: Number(orderId) } }
+          state: billData.state || "activo",
+          orderId: Number(orderId)
         }
       });
     }
@@ -174,7 +187,28 @@ export const checkOrderHasBill = async (id) => {
     throw new Error('ORDER_NOT_FOUND');
   }
   
-  return { hasBill: order.bill && order.bill.length > 0 };
+  return { hasBill: !!order.bill };
+};
+
+// Obtener órdenes por solicitante
+export const getOrdersByApplicant = async (applicantId) => {
+  if (!applicantId) {
+    throw new Error('El ID del solicitante es requerido');
+  }
+
+  return await prisma.order.findMany({
+    where: {
+      applicantperson: Number(applicantId),
+    },
+    orderBy: { idOrder: 'desc' },
+    include: {
+      users: true,
+      applicant: true,
+      manager: true,
+      facultyRel: true,
+      bill: true
+    },
+  });
 };
 
 // Get orders by managing person
@@ -199,7 +233,7 @@ export const getOrdersByIdManagingPerson = async (id) => {
 
 // Post a new order
 export const postOrder = async (orderData) => {
-  const { userId, applicantId, managingPersonId, facultyId, debtAmount } = orderData;
+  const { userId, applicantId, managingPersonId, facultyId, debtAmount, observaciones } = orderData;
   if (!userId || !applicantId || !managingPersonId || !facultyId || !debtAmount) {
     throw new Error('All fields are required');
   }
@@ -223,7 +257,8 @@ export const postOrder = async (orderData) => {
       manager: { connect: { idperson: managingPersonId } },
       facultyRel: { connect: { idfaculty: facultyId } },
       debtamount: debtAmount,
-      state:4,
+      state: 4,
+      observaciones: observaciones || null, // Añadimos el campo observaciones como opcional
     },
     include: {
       users: true,

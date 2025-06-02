@@ -1,21 +1,21 @@
 export const formatOrder = (order) => { 
   return {
-    id : order.idOrder,
-    createdAt : order.creationdate,
-    user : {
-      id : order.users.idusers,
-      name : order.users.firstname,
-      lastName : order.users.lastname
+    id: order.idOrder,
+    createdAt: order.creationdate,
+    user: {
+      id: order.users.idusers,
+      name: order.users.firstname,
+      lastname: order.users.lastname
     },
     applicant: {
       id: order.applicant.idperson,
       name: order.applicant.name,
-      lastName : order.applicant.lastname
+      lastname: order.applicant.lastname
     },
     managingPerson: {
       id: order.manager.idperson,
       name: order.manager.name,
-      lastName : order.manager.lastname
+      lastname: order.manager.lastname
     },
     faculty: {
       id: order.facultyRel.idfaculty,
@@ -23,11 +23,12 @@ export const formatOrder = (order) => {
     },
     debtAmount: order.debtamount,
     state: order.state,
-    bills: order.bill ? order.bill.map(bill => ({
-      id: bill.id,
-      idBill: bill.idbill,
-      billdate: bill.billdate,
-      sate: bill.sate
-    })) : []
+    observaciones: order.observaciones || null, // Nuevo campo
+    bill: order.bill ? {  // Cambiado de bills a bill (singular)
+      id: order.bill.id,
+      idBill: order.bill.idbill,
+      billdate: order.bill.billdate,
+      state: order.bill.state
+    } : null
   }
 }
