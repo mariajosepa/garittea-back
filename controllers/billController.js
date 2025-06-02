@@ -3,26 +3,35 @@ import { findAssociatedNotes } from '../services/billService.js';
 import { getOrderById } from '../services/orderService.js'; // implementar
 
 export const dispatchOrder = async (req, res) => {
-  const { orderId } = req.body;
+  const { orderId, idbill } = req.body;
 
-  if (!orderId) {
-    return res.status(400).json({ error: 'orderId es obligatorio.' });
+  if (!orderId || !idbill) {
+    return res.status(400).json({ 
+      error: 'orderId e idbill son obligatorios.' 
+    });
   }
 
   try {
     const order = await getOrderById(orderId);
     if (!order) {
-      return res.status(404).json({ error: 'Pedido no encontrado.' });
+      return res.status(404).json({ 
+        error: 'Pedido no encontrado.' 
+      });
     }
 
-    if (order.bill) {
-      return res.status(400).json({ error: 'El pedido ya tiene factura asociada.' });
-    }
-
-    const bill = await createBillForOrder(orderId);
-    res.status(201).json({ message: 'Factura creada con éxito.', bill });
+    const bill = await createBillForOrder(orderId, idbill);
+    res.status(201).json({ 
+      message: 'Factura creada con éxito.', 
+      bill 
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Error al despachar pedido.', details: error.message });
+    if (error.message === 'La orden ya tiene una factura asociada') {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ 
+      error: 'Error al despachar pedido.', 
+      details: error.message 
+    });
   }
 };
 
