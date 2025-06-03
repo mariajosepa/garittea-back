@@ -25,53 +25,63 @@ export const getPersonIdByName = async (name, lastname) => {
 };
 
 export const updatePerson = async (id, data) => {
-  // Extraer información de facultad si existe
   const numericId = Number(id);
 
-  // Preparar objeto para la actualización
+  // Desestructurar los campos que vienen del frontend
+  // Asegúrate de que 'data' contenga 'firstname', 'lastname', 'cellphone', 'email'
+  const { firstname, lastname, cellphone, email, faculty } = data; //
+
+  // Prepara los datos para la actualización en Prisma
   const updateData = {
-    ...otherData,
+    // Mapea 'firstname' a 'name' si tu columna en la DB es 'name'
     name: firstname,
+    lastname: lastname,
+    cellphone: cellphone,
     email: {
       update: {
-        email: data.email,
+        email: email, // El campo 'email' de la tabla 'email' se actualiza con el 'email' de los datos recibidos
       },
     },
   };
 
-  // Si se proporciona una facultad, conectar con ella usando su ID
+  // Lógica para manejar la relación de facultad
   if (faculty && Array.isArray(faculty) && faculty.length > 0) {
     updateData.faculty = {
-      // Desconectar facultades anteriores
+      // Primero, desconecta todas las facultades existentes
       set: [],
-      // Conectar con la(s) nueva(s) facultad(es)
+      // Luego, conecta las nuevas facultades
       connect: faculty
-        .filter(fac => fac && fac.id) // Filtrar facultades válidas
-        .map(fac => ({ 
-          idfaculty: Number(fac.id)
+        .filter(fac => fac && fac.id) // Asegura que fac y fac.id existan
+        .map(fac => ({
+          idfaculty: Number(fac.id) // Convierte a número y usa idfaculty, como espera tu DB
         }))
     };
   } else {
-    // Si no hay facultades, desconectar todas
+    // Si no se proporciona facultad o está vacía, desconecta todas las facultades existentes
     updateData.faculty = {
       set: []
     };
   }
 
-return await prisma.person.update({
-    where: { idperson: numericId },
-    data: updateData,
-    include: {
-      email: true,
-      faculty: true,
-    }
-  });
+  try {
+    return await prisma.person.update({
+      where: { idperson: numericId },
+      data: updateData,
+      include: { // Incluye las relaciones para devolver la persona completa y actualizada
+        email: true,
+        faculty: true,
+      }
+    });
+  } catch (error) {
+    console.error('Error updating person:', error);
+    throw error; // Propaga el error para que el frontend pueda manejarlo
+  }
 };
 
 export const deletePerson = async (id) => {
   try {
     const numericId = Number(id);
-    
+
     // Verificar si la persona está relacionada como aplicante o administrador en alguna orden
     const relatedOrders = await prisma.order.findMany({
       where: {
@@ -84,19 +94,19 @@ export const deletePerson = async (id) => {
         idOrder: true
       }
     });
-    
+
     // Si hay órdenes relacionadas, impedir la eliminación
     if (relatedOrders.length > 0) {
       throw new Error('No se puede eliminar esta persona porque está asociada con órdenes existentes');
     }
-    
+
     // Si no hay órdenes relacionadas, procedemos con la eliminación
-    
+
     // Primero, eliminar emails relacionados
     await prisma.email.deleteMany({
       where: { personId: numericId }
     });
-    
+
     // Desconectar de facultades (si es necesario)
     await prisma.person.update({
       where: { idperson: numericId },
@@ -106,7 +116,7 @@ export const deletePerson = async (id) => {
         }
       }
     });
-    
+
     // Finalmente, eliminar la persona
     return await prisma.person.delete({
       where: { idperson: numericId }
@@ -119,7 +129,7 @@ export const deletePerson = async (id) => {
 
 export const createPerson = async (data) => {
   // Extraer y descartar el campo id, junto con otra información
-  const { faculty, firstname, id, ...otherData } = data; // Añadir 'id' aquí para eliminarlo
+  const { faculty, firstname, id, ...otherData } = data; //
 
   // Preparar objeto para la creación
   const createData = {
@@ -137,7 +147,7 @@ export const createPerson = async (data) => {
     createData.faculty = {
       connect: faculty
         .filter(fac => fac && fac.id) // Filtrar facultades válidas
-        .map(fac => ({ 
+        .map(fac => ({
           idfaculty: Number(fac.id)
         }))
     };
@@ -150,4 +160,4 @@ export const createPerson = async (data) => {
       faculty: true,
     }
   });
-}
+};
